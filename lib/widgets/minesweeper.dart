@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_minesweeper/configs.dart';
+import 'package:flutter_minesweeper/layout.dart';
+import 'package:flutter_minesweeper/main.dart';
 
-const int ROWS = 6;
-const int COLUMNS = 5;
-
+const int ROWS = 14;
+const int COLUMNS = 12;
+const int TOTAL_GRIDS = ROWS * COLUMNS;
+/// 周圍炸彈數的數字顏色
 const BOMB_COLORS = [
   Colors.transparent,
   Colors.blue,
@@ -16,7 +20,10 @@ const BOMB_COLORS = [
   Colors.grey,
   Colors.black,
 ];
+/// 1 秒鐘的定義
 const ONE_SEC = const Duration(seconds: 1);
+/// 隨機產生器種子
+final randomGenerator = Random(DateTime.now().microsecondsSinceEpoch);
 
 class Minesweeper extends StatefulWidget {
 	Minesweeper({ Key key, }) : super(key: key);
@@ -25,12 +32,10 @@ class Minesweeper extends StatefulWidget {
 }
 
 class _MinesweeperState extends State<Minesweeper> {
-  /// 隨機產生數字
-  final _random = Random();
   /// 炸彈旗標設置 (座標對應布林值)
   final Map<int, Map<int, bool>> flags = Map();
   /// 每個格子單位
-  List<List<GameGrid>> grids;
+  final List<List<GameGrid>> grids = List();
   /// 全部的炸彈數量
   int _totalBombs;
   /// 是否踩到炸彈遊戲結束
@@ -43,26 +48,55 @@ class _MinesweeperState extends State<Minesweeper> {
   DateTime gameStart;
   /// 一場遊戲結束時間
   DateTime gameEnd;
+  /// 取得目前設置的旗子數
+  int get flagCount {
+    int _flagCount = 0;
+    flags.forEach((index, row) {
+        _flagCount += row.entries.length;
+    });
+    return _flagCount;
+  }
   /// 建立新遊戲
-  void createGame({ int bombAmount }) {
-    bombAmount = min(bombAmount, ROWS * COLUMNS);
+  void createGame() {
+    final state = App.of(context);
+    print(state);
+    // final Level level = App.of(context).configs.mineweeperLevel;
+    final Level level = Level.easy;
+    int bombAmount;
+    if (level == Level.difficult) {
+      bombAmount =
+        (TOTAL_GRIDS * 0.5).round() +
+        randomGenerator.nextInt(10) -
+        randomGenerator.nextInt(10);
+    } else if (level == Level.medium) {
+      bombAmount =
+        (TOTAL_GRIDS * 0.25).round() +
+        randomGenerator.nextInt(10) -
+        randomGenerator.nextInt(10);
+    } else {
+      bombAmount =
+        (TOTAL_GRIDS * 0.1).round() +
+        randomGenerator.nextInt(10) -
+        randomGenerator.nextInt(10);
+    }
+    bombAmount = min(bombAmount, TOTAL_GRIDS);
     int total = bombAmount;
-    final List<List<GameGrid>> newGrids = List.generate(
-      ROWS, (y) => List.generate(COLUMNS, (x) => GameGrid()),
-    );
+    flags.clear();
+    grids.clear();
+    for (int r = 0; r < ROWS; r++) {
+      grids.add(List.generate(COLUMNS, (x) => GameGrid()));
+    }
     while (bombAmount > 0) {
-      final rY = _random.nextInt(ROWS);
-      final rX = _random.nextInt(COLUMNS);
-      if (!newGrids[rY][rX].hasBomb) {
-        newGrids[rY][rX].hasBomb = true;
+      final rY = randomGenerator.nextInt(ROWS);
+      final rX = randomGenerator.nextInt(COLUMNS);
+      if (!grids[rY][rX].hasBomb) {
+        grids[rY][rX].hasBomb = true;
         bombAmount--;
       }
     }
     setState(() {
-      flags.clear();
-      this.grids = newGrids;
       _totalBombs = total;
-      _isGameover = false;
+      _isGameover = _isWin = false;
       if (_timer != null) _timer.cancel();
       _timer = Timer.periodic(ONE_SEC, (Timer timer) {
           if (_isGameover || _isWin) {
@@ -109,12 +143,9 @@ class _MinesweeperState extends State<Minesweeper> {
       }
     }
   }
+  /// 檢查目前狀態是否已經獲勝
+  /// 設置旗子數等於所有炸彈數且所有格子全已搜尋
   bool checkWin() {
-    int flagCount = 0;
-    flags.forEach((index, row) {
-        flagCount += row.entries.length;
-    });
-    print('flagCount: $flagCount');
     if (_totalBombs != flagCount) {
       return false;
     }
@@ -124,15 +155,12 @@ class _MinesweeperState extends State<Minesweeper> {
         if (col.isSearched) searchedCount++;
       });
     });
-    print('searchedCount + flagCount: ${searchedCount + flagCount}');
-    print('ROWS * COLUMNS: ${ROWS * COLUMNS}');
-    return searchedCount + flagCount == ROWS * COLUMNS;
+    return searchedCount + flagCount == TOTAL_GRIDS;
   }
   @override
   void initState() {
     super.initState();
-    // textEditingController.text = '';
-    createGame(bombAmount: 5);
+    createGame();
   }
   @override
   void dispose() {
@@ -141,6 +169,12 @@ class _MinesweeperState extends State<Minesweeper> {
   }
   @override
   Widget build(BuildContext context) {
+    Duration gameTime = gameEnd.difference(gameStart);
+    int minutes = gameTime.inMinutes;
+    int seconds = (gameTime.inSeconds - (minutes * 60));
+    String timeString = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    int remainBombs = _totalBombs - flagCount;
+
     print('build');
     if (_isGameover == true) {
       print('!!!!!!!!!!!!!!!!! Gameover !!!!!!!!!!!!!!!!!!');
@@ -152,19 +186,26 @@ class _MinesweeperState extends State<Minesweeper> {
     return ListView(
       children: <Widget>[
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
+            Container(
+              color: Colors.black,
+              width: 100,
+              alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Text(
+                remainBombs.toString().padLeft(3, '0'),
+                style: TextStyle(
+                  fontSize: 32,
+                  color: Colors.red,
+                ),
+              ),
+            ),
             Container(
               margin: EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.grey,
                 borderRadius: BorderRadius.all(Radius.circular(48)),
-                border: Border(
-                  // left: BorderSide(color: Colors.black26, width: 15.0),
-                  // right: BorderSide(color: Colors.black26, width: 15.0),
-                  // top: BorderSide(color: Colors.black12, width: 10.0),
-                  // bottom: BorderSide(color: Colors.black12, width: 10.0),
-                ),
               ),
               child: IconButton(
                 icon: Icon(
@@ -175,10 +216,23 @@ class _MinesweeperState extends State<Minesweeper> {
                 iconSize: 48.0,
                 color: Colors.yellow[200],
                 onPressed: () {
-                  createGame(bombAmount: 5);
+                  createGame();
                 },
               ),
-            )
+            ),
+            Container(
+              color: Colors.black,
+              width: 100,
+              alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Text(
+                timeString,
+                style: TextStyle(
+                  fontSize: 32,
+                  color: Colors.red,
+                ),
+              ),
+            ),
           ],
         ),
         GridView.builder(
@@ -215,7 +269,11 @@ class _MinesweeperState extends State<Minesweeper> {
               flags[y] is Map &&
               flags[y][x] == true
             ) {
-              widget = Icon(Icons.assistant_photo);
+              widget = Icon(
+                Icons.assistant_photo,
+                color: Colors.red,
+                size: 20,
+              );
             } else {
               widget = Text('');
             }
@@ -223,7 +281,7 @@ class _MinesweeperState extends State<Minesweeper> {
               ignoring: _isGameover || _isWin,
               child: InkWell(
                 child: Container(
-                  alignment: Alignment(0.0, 0.0),
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: grid.isSearched && grid.hasBomb
                       ? Colors.red
@@ -233,10 +291,10 @@ class _MinesweeperState extends State<Minesweeper> {
                     border: grid.isSearched
                       ? null
                       : Border(
-                      left: BorderSide(color: Colors.grey[300], width: 6),
-                      top: BorderSide(color: Colors.grey[300], width: 6),
-                      right: BorderSide(color: Colors.black26, width: 6),
-                      bottom: BorderSide(color: Colors.black26, width: 6),
+                      left: BorderSide(color: Colors.grey[300], width: 4),
+                      top: BorderSide(color: Colors.grey[300], width: 4),
+                      right: BorderSide(color: Colors.black26, width: 4),
+                      bottom: BorderSide(color: Colors.black26, width: 4),
                     ),
                   ),
                   child: widget,

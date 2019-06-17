@@ -1,29 +1,21 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_minesweeper/configs.dart';
+import 'package:flutter_minesweeper/main.dart';
+import 'package:flutter_minesweeper/screens/settings.dart';
 
-class LayoutStateContainer extends InheritedWidget {
-  final LayoutState state;
-  LayoutStateContainer({
-    @required this.state,
-    @required Widget child,
-  }) : super(child: child);
-
-  @override
-  bool updateShouldNotify(LayoutStateContainer old) => true;
-}
+const ICON_TITLES = [
+  '踩地雷',
+  '井字遊戲'
+];
 
 class Layout extends StatefulWidget {
   final LayoutState initialState;
   final List<Widget> children;
-
   Layout({
     this.initialState,
     @required this.children,
   });
-  static LayoutState of(BuildContext context) {
-    final LayoutStateContainer widgetInstance = context.inheritFromWidgetOfExactType(LayoutStateContainer);
-    return widgetInstance.state;
-  }
   @override
   LayoutState createState() => LayoutState(
     title: this.initialState?.title,
@@ -32,11 +24,13 @@ class Layout extends StatefulWidget {
 }
 
 class LayoutState extends State<Layout> {
+  final bool hideBottomNav;
   String title;
   int currentBottomNavIndex;
   LayoutState({
     this.title = '',
     this.currentBottomNavIndex = 0,
+    this.hideBottomNav = false,
   });
   void updateTitle(String newTitle) {
     setState(() {
@@ -46,17 +40,27 @@ class LayoutState extends State<Layout> {
   void updateBottomNavIndex(int newIndex) {
     setState(() {
       currentBottomNavIndex = newIndex;
+      title = ICON_TITLES[newIndex];
     });
   }
   @override
   void initState() {
     super.initState();
+    if (!hideBottomNav) {
+      updateTitle(ICON_TITLES[currentBottomNavIndex]);
+    }
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: onPressSettings,
+          )
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -64,28 +68,43 @@ class LayoutState extends State<Layout> {
           children: <Widget>[
             ListTile(
               title: Text('離開'),
-              onTap: () {
-                exit(0);
-              },
+              onTap: closeApp,
             ),
           ],
         ),
       ),
       body: widget.children[currentBottomNavIndex],
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: hideBottomNav
+        ? null
+        : BottomNavigationBar(
         currentIndex: currentBottomNavIndex,
         onTap: updateBottomNavIndex,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            title: Text('井字遊戲'),
+            title: Text(ICON_TITLES[0]),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.mail),
-            title: Text('踩地雷'),
+            title: Text(ICON_TITLES[1]),
           ),
         ],
       ),
     );
+  }
+  void closeApp() {
+    exit(0);
+  }
+  void onPressSettings() {
+    Navigator.push(context, MaterialPageRoute<Null>(
+      builder: (BuildContext context) {
+        final state = App.of(context);
+        return SettingsScreen(
+          configs: state.configs,
+          configUpdater: state.updateConfig,
+        );
+      },
+      fullscreenDialog: true,
+    ));
   }
 }
