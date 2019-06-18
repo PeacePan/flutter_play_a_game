@@ -321,14 +321,15 @@ class _MinesweeperState extends State<Minesweeper> {
                         context: context,
                         builder: (BuildContext context) {
                           return SimpleDialog(
-                            title: Container(
-                              alignment: Alignment.center,
-                              child: Text(
-                                '厲害唷！',
-                                style: TextStyle(
-                                  fontSize: 32,
-                                )
-                              ),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('厲害唷！',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                  )
+                                ),
+                              ],
                             ),
                             children: <Widget>[
                               SimpleDialogOption(

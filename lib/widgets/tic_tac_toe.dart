@@ -1,7 +1,10 @@
+import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 const int GRIDS = 9;
+/// 隨機產生器種子
+final randomGenerator = Random(DateTime.now().microsecondsSinceEpoch);
 
 class TicTacToe extends StatefulWidget {
 	TicTacToe({ Key key, }) : super(key: key);
@@ -16,7 +19,7 @@ class _TicTacToeState extends State<TicTacToe> {
   List<int> grids;
   void reset() {
     setState(() {
-      turn = 0;
+      turn = randomGenerator.nextInt(2);
       remainStep = GRIDS;
       winner = null;
       grids = List.filled(GRIDS, null);
@@ -75,15 +78,109 @@ class _TicTacToeState extends State<TicTacToe> {
                   child: widget,
                 ),
                 onTap: () {
+                  if (grids[index] != null) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return SimpleDialog(
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('此格已下過',
+                                style: TextStyle(
+                                  fontSize: 32,
+                                )
+                              ),
+                            ],
+                          ),
+                          children: <Widget>[
+                            SimpleDialogOption(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Text('知道了'),
+                                ],
+                              ),
+                              onPressed: () { Navigator.pop(context); },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    return;
+                  }
                   setState(() {
                     grids[index] = turn;
                     print(grids);
                     if (hasWin(turn)) {
                       winner = turn;
                       print('$winner 獲勝');
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return SimpleDialog(
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(winner == 0 ? Icons.close : Icons.radio_button_unchecked),
+                                Text(' 獲勝了',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                  )
+                                ),
+                              ],
+                            ),
+                            children: <Widget>[
+                              SimpleDialogOption(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Text('再玩一次'),
+                                  ],
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  reset();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     } else if (grids.fold(true, (isFlat, grid) => isFlat && grid != null)) {
                       winner = -1;
                       print('平手');
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return SimpleDialog(
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('平手',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                  )
+                                ),
+                              ],
+                            ),
+                            children: <Widget>[
+                              SimpleDialogOption(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Text('再玩一次'),
+                                  ],
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  reset();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     }
                     turn = turn == 1 ? 0 : 1;
                   });
@@ -91,6 +188,13 @@ class _TicTacToeState extends State<TicTacToe> {
               ),
             );
           },
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('輪到 '),
+            Icon(turn == 0 ? Icons.close : Icons.radio_button_unchecked),
+          ],
         ),
         Container(
           alignment: Alignment.center,
