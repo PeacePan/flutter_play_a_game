@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_minesweeper/configs.dart';
-import 'package:flutter_minesweeper/layout.dart';
 import 'package:flutter_minesweeper/main.dart';
 
 const int ROWS = 14;
@@ -56,12 +55,16 @@ class _MinesweeperState extends State<Minesweeper> {
     });
     return _flagCount;
   }
+  void initGrids() {
+    flags.clear();
+    grids.clear();
+    for (int r = 0; r < ROWS; r++) {
+      grids.add(List.generate(COLUMNS, (x) => GameGrid()));
+    }
+  }
   /// 建立新遊戲
   void createGame() {
-    final state = App.of(context);
-    print(state);
-    // final Level level = App.of(context).configs.mineweeperLevel;
-    final Level level = Level.easy;
+    final Level level = App.of(context).configs.mineweeperLevel;
     int bombAmount;
     if (level == Level.difficult) {
       bombAmount =
@@ -81,11 +84,7 @@ class _MinesweeperState extends State<Minesweeper> {
     }
     bombAmount = min(bombAmount, TOTAL_GRIDS);
     int total = bombAmount;
-    flags.clear();
-    grids.clear();
-    for (int r = 0; r < ROWS; r++) {
-      grids.add(List.generate(COLUMNS, (x) => GameGrid()));
-    }
+    initGrids();
     while (bombAmount > 0) {
       final rY = randomGenerator.nextInt(ROWS);
       final rX = randomGenerator.nextInt(COLUMNS);
@@ -160,7 +159,7 @@ class _MinesweeperState extends State<Minesweeper> {
   @override
   void initState() {
     super.initState();
-    createGame();
+    initGrids();
   }
   @override
   void dispose() {
@@ -169,11 +168,15 @@ class _MinesweeperState extends State<Minesweeper> {
   }
   @override
   Widget build(BuildContext context) {
-    Duration gameTime = gameEnd.difference(gameStart);
-    int minutes = gameTime.inMinutes;
-    int seconds = (gameTime.inSeconds - (minutes * 60));
-    String timeString = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    int remainBombs = _totalBombs - flagCount;
+    String timeString = '00:00';
+    int remainBombs = 0;
+    if (gameStart != null && gameEnd != null) {
+      Duration gameTime = gameEnd.difference(gameStart);
+      int minutes = gameTime.inMinutes;
+      int seconds = (gameTime.inSeconds - (minutes * 60));
+      timeString = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+      remainBombs = _totalBombs - flagCount;
+    }
 
     print('build');
     if (_isGameover == true) {

@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_minesweeper/configs.dart';
 import 'package:flutter_minesweeper/main.dart';
 import 'package:flutter_minesweeper/screens/settings.dart';
 
@@ -66,8 +65,20 @@ class LayoutState extends State<Layout> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
+            DrawerHeader(
+              child: Text(
+                '玩個遊戲',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+            ),
             ListTile(
-              title: Text('離開'),
+              title: Text('關閉應用程式'),
               onTap: closeApp,
             ),
           ],

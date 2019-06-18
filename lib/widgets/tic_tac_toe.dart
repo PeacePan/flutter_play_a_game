@@ -65,29 +65,30 @@ class _TicTacToeState extends State<TicTacToe> {
               default:
                 widget = Text(''); break;
             }
-            return InkWell(
-              child: Container(
-                height: 240,
-                alignment: Alignment(0.0, 0.0),
-                color: winner == null ? Colors.black26 : Colors.black12,
-                child: widget,
+            return IgnorePointer(
+              ignoring: winner != null,
+              child: InkWell(
+                child: Container(
+                  height: 240,
+                  alignment: Alignment(0.0, 0.0),
+                  color: winner == null ? Colors.black26 : Colors.black12,
+                  child: widget,
+                ),
+                onTap: () {
+                  setState(() {
+                    grids[index] = turn;
+                    print(grids);
+                    if (hasWin(turn)) {
+                      winner = turn;
+                      print('$winner 獲勝');
+                    } else if (grids.fold(true, (isFlat, grid) => isFlat && grid != null)) {
+                      winner = -1;
+                      print('平手');
+                    }
+                    turn = turn == 1 ? 0 : 1;
+                  });
+                },
               ),
-              highlightColor: winner == null ? null : Colors.transparent,
-              splashColor: winner == null ? null : Colors.transparent,
-              onTap: () {
-                if (winner != null) return;
-                setState(() {
-                  grids[index] = turn;
-                  print(grids);
-                  if (hasWin(turn)) {
-                    winner = turn;
-                    print('winner: $winner');
-                  } else if (grids.fold(true, (isFlat, grid) => isFlat && grid != null)) {
-
-                  }
-                  turn = turn == 1 ? 0 : 1;
-                });
-              },
             );
           },
         )
