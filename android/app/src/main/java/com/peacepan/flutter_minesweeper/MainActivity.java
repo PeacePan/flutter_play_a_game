@@ -1,4 +1,4 @@
-package com.example.flutter_minesweeper;
+package com.peacepan.flutter_minesweeper;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

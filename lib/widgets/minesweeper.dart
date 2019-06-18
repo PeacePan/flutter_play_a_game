@@ -177,15 +177,7 @@ class _MinesweeperState extends State<Minesweeper> {
       timeString = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
       remainBombs = _totalBombs - flagCount;
     }
-
-    print('build');
-    if (_isGameover == true) {
-      print('!!!!!!!!!!!!!!!!! Gameover !!!!!!!!!!!!!!!!!!');
-    }
-    if (_isWin == true) {
-      print('***************** You Win *****************');
-    }
-
+    print('playtime: $timeString');
     return ListView(
       children: <Widget>[
         Row(
@@ -214,7 +206,7 @@ class _MinesweeperState extends State<Minesweeper> {
                 icon: Icon(
                   _isGameover
                     ? Icons.sentiment_very_dissatisfied
-                    : Icons.sentiment_satisfied
+                    : Icons.mood
                 ),
                 iconSize: 48.0,
                 color: Colors.yellow[200],
@@ -256,7 +248,7 @@ class _MinesweeperState extends State<Minesweeper> {
             Widget widget;
             if (grid.isSearched) {
               if (grid.hasBomb) {
-                widget = Icon(Icons.close);
+                widget = Icon(Icons.new_releases);
               } else {
                 widget = Text(
                   grid.aroundBombs > 0
@@ -304,6 +296,7 @@ class _MinesweeperState extends State<Minesweeper> {
                 ),
                 onTap: () {
                   if (!grid.isSearched && grid.hasBomb) {
+                    /// 踩到炸彈遊戲結束
                     setState(() {
                       grid.isSearched = true;
                       _isGameover = true;
@@ -322,6 +315,34 @@ class _MinesweeperState extends State<Minesweeper> {
                   setState(() {
                     searchBomb(x, y);
                     _isWin = checkWin();
+                    if (_isWin == true) {
+                      /// 已達成獲勝條件
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return SimpleDialog(
+                            title: Container(
+                              alignment: Alignment.center,
+                              child: Text(
+                                '厲害唷！',
+                                style: TextStyle(
+                                  fontSize: 32,
+                                )
+                              ),
+                            ),
+                            children: <Widget>[
+                              SimpleDialogOption(
+                                child: Text('新遊戲'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  createGame();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
                   });
                 },
                 onLongPress: () {
