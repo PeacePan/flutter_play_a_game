@@ -1,0 +1,5 @@
+jobs:
+  include:
+  - stage: master
+  - stage: beta
+  - stage: release

@@ -178,6 +178,7 @@ class _MinesweeperState extends State<Minesweeper> {
       remainBombs = _totalBombs - flagCount;
     }
     print('playtime: $timeString');
+    print('remainBombs: $remainBombs');
     return ListView(
       children: <Widget>[
         Row(

@@ -18,8 +18,7 @@ class _InitialScreenState extends State<InitialScreen> {
     AppState appState = App.of(context);
     appState.configs.mineweeperLevel = mineweeperLevel;
     await appState.updateConfig(appState.configs);
-    await Navigator.pushNamed(context, '/');
-    Navigator.pop(context);
+    await Navigator.pushReplacementNamed(context, '/');
   }
   @override
   void initState() {
@@ -33,9 +32,13 @@ class _InitialScreenState extends State<InitialScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      alignment: Alignment.center,
       color: Colors.white,
       width: double.infinity,
       height: double.infinity,
+      child: CircularProgressIndicator(
+        backgroundColor: Colors.transparent,
+      ),
     );
   }
 }
