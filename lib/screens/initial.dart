@@ -18,7 +18,8 @@ class _InitialScreenState extends State<InitialScreen> {
     AppState appState = App.of(context);
     appState.configs.mineweeperLevel = mineweeperLevel;
     await appState.updateConfig(appState.configs);
-    await Navigator.popAndPushNamed(context, '/');
+    await Navigator.pushNamed(context, '/');
+    Navigator.pop(context);
   }
   @override
   void initState() {

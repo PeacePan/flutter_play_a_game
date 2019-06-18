@@ -55,11 +55,11 @@ class _MinesweeperState extends State<Minesweeper> {
     });
     return _flagCount;
   }
-  void initGrids() {
+  void resetGrids(bool isInit) {
     flags.clear();
     grids.clear();
     for (int r = 0; r < ROWS; r++) {
-      grids.add(List.generate(COLUMNS, (x) => GameGrid()));
+      grids.add(List.generate(COLUMNS, (x) => GameGrid(isSearched: isInit)));
     }
   }
   /// 建立新遊戲
@@ -84,7 +84,7 @@ class _MinesweeperState extends State<Minesweeper> {
     }
     bombAmount = min(bombAmount, TOTAL_GRIDS);
     int total = bombAmount;
-    initGrids();
+    resetGrids(false);
     while (bombAmount > 0) {
       final rY = randomGenerator.nextInt(ROWS);
       final rX = randomGenerator.nextInt(COLUMNS);
@@ -159,7 +159,7 @@ class _MinesweeperState extends State<Minesweeper> {
   @override
   void initState() {
     super.initState();
-    initGrids();
+    resetGrids(true);
   }
   @override
   void dispose() {
@@ -310,6 +310,15 @@ class _MinesweeperState extends State<Minesweeper> {
                     });
                     return;
                   }
+                  /// 如果採的位置有設置的旗子，
+                  /// 但沒有炸彈則解除旗子的設置
+                  if (
+                    !grid.hasBomb &&
+                    flags[y] is Map &&
+                    flags[y][x] == true
+                  ) {
+                    flags[y].remove(x);
+                  }
                   setState(() {
                     searchBomb(x, y);
                     _isWin = checkWin();
@@ -318,7 +327,11 @@ class _MinesweeperState extends State<Minesweeper> {
                 onLongPress: () {
                   setState(() {
                     if (flags[y] == null) flags[y] = Map();
-                    flags[y][x] = true;
+                    if (flags[y][x] == true) {
+                      flags[y].remove(x);
+                    } else {
+                      flags[y][x] = true;
+                    }
                     _isWin = checkWin();
                   });
                 },
@@ -332,8 +345,12 @@ class _MinesweeperState extends State<Minesweeper> {
 }
 
 class GameGrid {
-  bool hasBomb = false;
-  bool isSearched = false;
-  int aroundBombs = 0;
-  GameGrid();
+  bool hasBomb;
+  bool isSearched;
+  int aroundBombs;
+  GameGrid({
+    this.isSearched = false,
+    this.hasBomb = false,
+    this.aroundBombs = 0,
+  });
 }
