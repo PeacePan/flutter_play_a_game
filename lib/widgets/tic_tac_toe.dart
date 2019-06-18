@@ -111,10 +111,8 @@ class _TicTacToeState extends State<TicTacToe> {
                   }
                   setState(() {
                     grids[index] = turn;
-                    print(grids);
                     if (hasWin(turn)) {
                       winner = turn;
-                      print('$winner 獲勝');
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
@@ -149,7 +147,6 @@ class _TicTacToeState extends State<TicTacToe> {
                       );
                     } else if (grids.fold(true, (isFlat, grid) => isFlat && grid != null)) {
                       winner = -1;
-                      print('平手');
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {

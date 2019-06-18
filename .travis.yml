@@ -1,5 +1,7 @@
 jobs:
   include:
+  - stage: test
+    script: flutter test
   - stage: master
   - stage: beta
   - stage: release
