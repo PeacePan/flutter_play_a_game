@@ -91,7 +91,14 @@ class _TicTacToeState extends State<TicTacToe> {
               ),
             );
           },
-        )
+        ),
+        Container(
+          alignment: Alignment.center,
+          child: RaisedButton(
+            child: Text('重來'),
+            onPressed: reset,
+          ),
+        ),
       ],
     );
   }
