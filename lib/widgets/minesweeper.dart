@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_minesweeper/configs.dart';
 import 'package:flutter_minesweeper/main.dart';
+import 'package:flutter_minesweeper/utlis.dart';
 
 const int ROWS = 14;
 const int COLUMNS = 12;
@@ -177,8 +178,6 @@ class _MinesweeperState extends State<Minesweeper> {
       timeString = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
       remainBombs = _totalBombs - flagCount;
     }
-    print('playtime: $timeString');
-    print('remainBombs: $remainBombs');
     return ListView(
       children: <Widget>[
         Row(
@@ -212,6 +211,22 @@ class _MinesweeperState extends State<Minesweeper> {
                 iconSize: 48.0,
                 color: Colors.yellow[200],
                 onPressed: () {
+                  if (_isGameover == false && _isWin == false) {
+                    alertMessage(
+                      context: context,
+                      title: '建立新遊戲？',
+                      okText: '確定',
+                      cancelText: '取消',
+                      onOK: () {
+                        Navigator.pop(context);
+                        createGame();
+                      },
+                      onCancel: () {
+                        Navigator.pop(context);
+                      },
+                    );
+                    return;
+                  }
                   createGame();
                 },
               ),
@@ -318,31 +333,14 @@ class _MinesweeperState extends State<Minesweeper> {
                     _isWin = checkWin();
                     if (_isWin == true) {
                       /// 已達成獲勝條件
-                      showDialog(
+                      alertMessage(
                         context: context,
-                        builder: (BuildContext context) {
-                          return SimpleDialog(
-                            title: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('厲害唷！',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                  )
-                                ),
-                              ],
-                            ),
-                            children: <Widget>[
-                              SimpleDialogOption(
-                                child: Text('新遊戲'),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  createGame();
-                                },
-                              ),
-                            ],
-                          );
-                        },
+                        title: '厲害唷！',
+                        okText: '新遊戲',
+                        onOK: () {
+                          Navigator.pop(context);
+                          createGame();
+                        }
                       );
                     }
                   });

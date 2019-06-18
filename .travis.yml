@@ -1,7 +1,121 @@
+branches:
+  only:
+  - master
+git:
+  depth: false
+cache:
+  bundler: true
+  directories:
+  - "$HOME/.pub-cache"
 jobs:
   include:
-  - stage: test
-    script: flutter test
-  - stage: master
-  - stage: beta
-  - stage: release
+    - stage: test
+      os: linux
+      language: generic
+      sudo: false
+      # 設置 flutter 環境
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - libstdc++6
+          - fonts-droid
+      # 設置 flutter 環境
+      before_script:
+        - git clone https://github.com/flutter/flutter.git -b beta --depth 1
+      script:
+        # 加大 unix 系統最大檔案開啟數
+        - ulimit -S -n 2048
+        - "./flutter/bin/flutter upgrade"
+        # lint 檢測原始碼
+        - "./flutter/bin/flutter analyze lib/ test/"
+        # 執行 flutter 測試
+        - "./flutter/bin/flutter test"
+    - stage: deploy_apk
+      os: linux
+      language: android
+      # 安装 android sdk
+      licenses:
+      - android-sdk-preview-license-.+
+      - android-sdk-license-.+
+      - google-gdk-license-.+
+      android:
+        components:
+        - tools
+        - platform-tools
+        - build-tools-27.0.3
+        - android-27
+        - sys-img-armeabi-v7a-google_apis-25
+        - extra-android-m2repository
+        - extra-google-m2repository
+        - extra-google-android-support
+      jdk: oraclejdk8
+      sudo: false
+      # 安装 android sdk
+      # ===========
+      # 設置 flutter 環境
+      env: APK_OUTPUT=build/app/outputs/apk/release/app-release.apk
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - libstdc++6
+          - fonts-droid
+      # 設置 flutter 環境
+      before_script:
+        # 使用 google play 金鑰產生 keystore
+        - openssl aes-256-cbc -K $encrypted_faf484425141_key -iv $encrypted_faf484425141_iv -in key.properties.enc -out android/key.properties -d
+        - openssl aes-256-cbc -K $encrypted_a1a476bece9a_key -iv $encrypted_a1a476bece9a_iv -in feng.jks.enc -out android/feng.jks -d
+        # 安裝 flutter 命令列執行檔
+        - git clone https://github.com/flutter/flutter.git -b beta --depth 1
+      script:
+        - "./flutter/bin/flutter upgrade"
+        - "./flutter/bin/flutter -v build apk --release"
+      # deploy:
+      #   provider: releases
+      #   skip_cleanup: true
+      #   # 用你的 api_key 替代
+      #   api_key:
+      #     secure: uDRE0d3gZ5JYhl/jBiDp5z...
+      #   file: $APK_OUTPUT
+      #   on:
+      #     tags: true
+    - stage: deploy_ipa
+      os: osx
+      language: objective-c
+      osx_image: xcode10.2
+      before_script:
+      # ===== 安裝 xcode =====
+      - pip2 install six
+      - brew update
+      - brew install libimobiledevice
+      - brew install ideviceinstaller
+      - brew install ios-deploy
+      # ===== 安裝 xcode =====
+      # 安裝 flutter 命令列執行檔
+      - git clone https://github.com/flutter/flutter.git -b beta --depth 1
+      # 檢查 flutter 編譯環境
+      - "./flutter/bin/flutter doctor -v"
+      # 抓取使用到的 flutter 套件
+      - "./flutter/bin/flutter packages get"
+      script:
+      - "./flutter/bin/flutter upgrade"
+      - gem install cocoapods
+      - pod setup
+      - "./flutter/bin/flutter -v build ios --release --no-codesign"
+      - mkdir Runner
+      - mkdir Runner/Payload
+      - cp -r build/ios/iphoneos/Runner.app Runner/Payload/Runner.app
+      - cd Runner
+      - zip -r Runner.ipa Payload
+      # deploy:
+      #   provider: releases
+      #   skip_cleanup: true
+      #   # 跟 android 的 api_key 一致
+      #   api_key:
+      #     secure: uDRE0d3gZ5JYhl/jBiDp5zv32fH...
+      #   file: Runner.ipa
+      #   on:
+      #     tags: true
