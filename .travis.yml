@@ -6,6 +6,7 @@ git:
 cache:
   bundler: true
   directories:
+  # flutter usage
   - "$HOME/.pub-cache"
 jobs:
   include:
