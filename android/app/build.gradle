@@ -29,6 +29,8 @@ def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
+def storeFile = rootProject.file('store.jks')
+
 android {
     compileSdkVersion 28
 
@@ -47,9 +49,9 @@ android {
     signingConfigs {
        release {
            keyAlias keystoreProperties['keyAlias']
-           keyPassword System.getenv('UPLOAD_KEY_PASSWORD')
-           storeFile file(keystoreProperties['storeFile'])
-           storePassword System.getenv('UPLOAD_KEY_PASSWORD')
+           keyPassword keystoreProperties['keyPassword']
+           storeFile storeFile
+           storePassword keystoreProperties['storePassword']
        }
    }
     buildTypes {

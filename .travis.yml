@@ -26,11 +26,6 @@ jobs:
       before_script:
         - git clone https://github.com/flutter/flutter.git -b beta --depth 1
       script:
-        # 加大 unix 系統最大檔案開啟數
-        - ulimit -S -n 2048
-        - "./flutter/bin/flutter upgrade"
-        # lint 檢測原始碼
-        - "./flutter/bin/flutter analyze lib/ test/"
         # 執行 flutter 測試
         - "./flutter/bin/flutter test"
     - stage: deploy_apk
@@ -45,8 +40,8 @@ jobs:
         components:
         - tools
         - platform-tools
-        - build-tools-27.0.3
-        - android-27
+        - build-tools-28.0.3
+        - android-28
         - sys-img-armeabi-v7a-google_apis-25
         - extra-android-m2repository
         - extra-google-m2repository
@@ -66,9 +61,9 @@ jobs:
           - fonts-droid
       # 設置 flutter 環境
       before_script:
-        # 使用 google play 金鑰產生 keystore
-        - openssl aes-256-cbc -K $encrypted_faf484425141_key -iv $encrypted_faf484425141_iv -in key.properties.enc -out android/key.properties -d
-        - openssl aes-256-cbc -K $encrypted_a1a476bece9a_key -iv $encrypted_a1a476bece9a_iv -in feng.jks.enc -out android/feng.jks -d
+        # 解碼 keystore
+        - openssl enc -aes-256-cbc -d -k $ANDROID_ENCRYPTED_KEY -in android/key.properties.enc -out android/key.properties
+        - openssl enc -aes-256-cbc -d -k $ANDROID_ENCRYPTED_KEY -in android/store.jks.enc -out android/store.jks
         # 安裝 flutter 命令列執行檔
         - git clone https://github.com/flutter/flutter.git -b beta --depth 1
       script:
