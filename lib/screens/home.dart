@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_minesweeper/games/minesweeper.dart';
+import 'package:flutter_minesweeper/games/number_2048.dart';
+import 'package:flutter_minesweeper/games/tetris.dart';
+import 'package:flutter_minesweeper/games/tic_tac_toe.dart';
 import 'package:flutter_minesweeper/layout.dart';
-import 'package:flutter_minesweeper/widgets/game_2048.dart';
-import 'package:flutter_minesweeper/widgets/minesweeper.dart';
-import 'package:flutter_minesweeper/widgets/tic_tac_toe.dart';
 
 class HomeScreen extends StatefulWidget {
 	HomeScreen({ Key key, }) : super(key: key);
@@ -22,7 +23,8 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Minesweeper(),
         TicTacToe(),
-        Game2048(),
+        Tetris(),
+        Number2048(),
       ],
     );
   }

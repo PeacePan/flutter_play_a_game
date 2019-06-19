@@ -8,13 +8,13 @@ const PANNING_LIMIT = 20;
 /// 隨機產生器種子
 final randomGenerator = Random(DateTime.now().microsecondsSinceEpoch);
 
-class Game2048 extends StatefulWidget {
-	Game2048({ Key key, }) : super(key: key);
+class Number2048 extends StatefulWidget {
+	Number2048({ Key key, }) : super(key: key);
 	@override
-	_Game2048State createState() => _Game2048State();
+	_Number2048State createState() => _Number2048State();
 }
 
-class _Game2048State extends State<Game2048> {
+class _Number2048State extends State<Number2048> {
   /// 每個格子單位
   final List<List<GameGrid>> grids = List();
   bool get isAllFilled {

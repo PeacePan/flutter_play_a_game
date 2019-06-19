@@ -6,6 +6,7 @@ import 'package:flutter_minesweeper/screens/settings.dart';
 const ICON_TITLES = [
   '踩地雷',
   '井字遊戲',
+  '俄羅斯方塊',
   '2048',
 ];
 
@@ -89,6 +90,7 @@ class LayoutState extends State<Layout> {
       bottomNavigationBar: hideBottomNav
         ? null
         : BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: currentBottomNavIndex,
         onTap: updateBottomNavIndex,
         items: <BottomNavigationBarItem>[
@@ -101,8 +103,12 @@ class LayoutState extends State<Layout> {
             title: Text(ICON_TITLES[1]),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.filter_2),
+            icon: Icon(Icons.gamepad),
             title: Text(ICON_TITLES[2]),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.filter_2),
+            title: Text(ICON_TITLES[3]),
           ),
         ],
       ),
