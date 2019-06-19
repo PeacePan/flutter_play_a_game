@@ -5,7 +5,8 @@ import 'package:flutter_minesweeper/screens/settings.dart';
 
 const ICON_TITLES = [
   '踩地雷',
-  '井字遊戲'
+  '井字遊戲',
+  '2048',
 ];
 
 class Layout extends StatefulWidget {
@@ -92,12 +93,16 @@ class LayoutState extends State<Layout> {
         onTap: updateBottomNavIndex,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.brightness_high),
             title: Text(ICON_TITLES[0]),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.mail),
+            icon: Icon(Icons.grid_on),
             title: Text(ICON_TITLES[1]),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.filter_2),
+            title: Text(ICON_TITLES[2]),
           ),
         ],
       ),

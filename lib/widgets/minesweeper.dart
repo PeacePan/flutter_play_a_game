@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_minesweeper/configs.dart';
 import 'package:flutter_minesweeper/main.dart';
 import 'package:flutter_minesweeper/utlis.dart';
+import 'package:flutter_minesweeper/widgets/bonuce_icon.dart';
 
 const int ROWS = 14;
 const int COLUMNS = 12;
@@ -280,7 +281,7 @@ class _MinesweeperState extends State<Minesweeper> {
               flags[y] is Map &&
               flags[y][x] == true
             ) {
-              widget = Icon(
+              widget = BonuceIcon(
                 Icons.assistant_photo,
                 color: Colors.red,
                 size: 20,
