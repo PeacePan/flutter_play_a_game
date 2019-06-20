@@ -40,9 +40,9 @@ class _MinesweeperState extends State<Minesweeper> {
   /// 全部的炸彈數量
   int _totalBombs;
   /// 是否踩到炸彈遊戲結束
-  bool _isGameover = false;
+  bool _isGameOver = false;
   /// 所有格子全搜尋，設置旗子數等於所有炸彈數
-  bool _isWin = false;
+  bool _isGameWon = false;
   /// 計數遊戲時間
   Timer _timer;
   /// 一場遊戲開始時間
@@ -97,10 +97,10 @@ class _MinesweeperState extends State<Minesweeper> {
     }
     setState(() {
       _totalBombs = total;
-      _isGameover = _isWin = false;
-      if (_timer != null) _timer.cancel();
+      _isGameOver = _isGameWon = false;
+      _timer?.cancel();
       _timer = Timer.periodic(ONE_SEC, (Timer timer) {
-          if (_isGameover || _isWin) {
+          if (_isGameOver || _isGameWon) {
             timer.cancel();
             return;
           }
@@ -165,7 +165,7 @@ class _MinesweeperState extends State<Minesweeper> {
   }
   @override
   void dispose() {
-    if (_timer != null) _timer.cancel();
+    _timer?.cancel();
     super.dispose();
   }
   @override
@@ -205,14 +205,14 @@ class _MinesweeperState extends State<Minesweeper> {
               ),
               child: IconButton(
                 icon: Icon(
-                  _isGameover
+                  _isGameOver
                     ? Icons.sentiment_very_dissatisfied
                     : Icons.mood
                 ),
                 iconSize: 48.0,
                 color: Colors.yellow[200],
                 onPressed: () {
-                  if (_isGameover == false && _isWin == false) {
+                  if (_isGameOver == false && _isGameWon == false) {
                     alertMessage(
                       context: context,
                       title: '建立新遊戲？',
@@ -290,14 +290,14 @@ class _MinesweeperState extends State<Minesweeper> {
               widget = Text('');
             }
             return IgnorePointer(
-              ignoring: _isGameover || _isWin,
+              ignoring: _isGameOver || _isGameWon,
               child: InkWell(
                 child: Container(
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: grid.isSearched && grid.hasBomb
                       ? Colors.red
-                      : _isGameover
+                      : _isGameOver
                       ? Colors.black12
                       : Colors.black26,
                     border: grid.isSearched
@@ -316,7 +316,7 @@ class _MinesweeperState extends State<Minesweeper> {
                     /// 踩到炸彈遊戲結束
                     setState(() {
                       grid.isSearched = true;
-                      _isGameover = true;
+                      _isGameOver = true;
                     });
                     return;
                   }
@@ -331,8 +331,8 @@ class _MinesweeperState extends State<Minesweeper> {
                   }
                   setState(() {
                     searchBomb(x, y);
-                    _isWin = checkWin();
-                    if (_isWin == true) {
+                    _isGameWon = checkWin();
+                    if (_isGameWon == true) {
                       /// 已達成獲勝條件
                       alertMessage(
                         context: context,
@@ -348,13 +348,13 @@ class _MinesweeperState extends State<Minesweeper> {
                 },
                 onLongPress: () {
                   setState(() {
-                    if (flags[y] == null) flags[y] = Map();
+                    flags[y] ??= Map();
                     if (flags[y][x] == true) {
                       flags[y].remove(x);
                     } else {
                       flags[y][x] = true;
                     }
-                    _isWin = checkWin();
+                    _isGameWon = checkWin();
                   });
                 },
               ),

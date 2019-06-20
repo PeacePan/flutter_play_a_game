@@ -56,9 +56,8 @@ class _SwipeableState extends State<Swipeable> {
           }
           dy = null;
         }
-        if (direction != null) {
-          widget.onSwipe(direction);
-        }
+        if (direction == null) return;
+        widget.onSwipe(direction);
       },
     );
   }
