@@ -52,7 +52,6 @@ class AppState extends State<App> {
   }
 }
 
-
 class _AppStateContainer extends InheritedWidget {
   final AppState state;
   _AppStateContainer({

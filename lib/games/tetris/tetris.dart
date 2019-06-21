@@ -1,242 +1,181 @@
-import 'dart:async';
 import 'dart:math';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import './consts.dart';
 import './game_pad.dart';
+import './shape.dart';
 import './tetris_painter.dart';
+
+/// 可堆疊的總行數
+const ROWS = 20;
+/// 一行最多擺放的寬度
+const COLS = 10;
+/// 總格子數
+const TOTAL_GRIDS = ROWS * COLS;
+/// 所有方塊形狀，每個方塊都為 4x4
 
 /// 隨機產生器種子
 final randomGenerator = Random(DateTime.now().microsecondsSinceEpoch);
 
 class Tetris extends StatefulWidget {
 	Tetris({ Key key, }) : super(key: key);
+  static TetrisState of(BuildContext context) {
+    final _TetrisStateContainer widgetInstance =
+      context.inheritFromWidgetOfExactType(_TetrisStateContainer);
+    return widgetInstance.data;
+  }
 	@override
 	TetrisState createState() => TetrisState();
 }
 
-class TetrisState extends State<Tetris> with SingleTickerProviderStateMixin {
+class TetrisState extends State<Tetris> {
   /// 魔術方塊面板，數值是顏色的 id
-  List<int> panel;
+  List<List<int>> panel;
   /// 目前落下的方塊
   Shape currentShape;
   /// 下一個產生的方塊
   Shape nextShape;
   /// 遊戲結束，畫面暫停
   bool freezed;
-  /// 目前面板的最低水位，為 0 時遊戲結束
-  int bottom;
   /// 魔術方塊下降間隔的計時器
-  Timer _runner;
+  Timer _fallTimer;
   /// 用毫秒數來代表墜落速度
-  int fallingSpeed;
+  int _fallingSpeed;
 
   void init() {
-    panel ??= List.filled(ROWS * COLS, 0);
-    panel.fillRange(0, panel.length - 1, 0);
-    bottom = ROWS - 1;
-    fallingSpeed = 500;
+    for (int y = 0; y < ROWS; y++) {
+      for (int x = 0; x < COLS; x++) {
+        panel[y][x] = 0;
+      }
+    }
+    _fallingSpeed = 100;
+    currentShape = nextShape = null;
     newShape();
   }
   void newShape() {
-    currentShape = nextShape != null ? nextShape : Shape(
-      pattern: SHAPES[randomGenerator.nextInt(SHAPES.length)],
-      colorIndex: 1 + randomGenerator.nextInt(SHAPE_COLORS.length - 1),
-      angle: randomGenerator.nextInt(4) * 90,
-    );
-    nextShape = Shape(
-      pattern: SHAPES[randomGenerator.nextInt(SHAPES.length)],
-      colorIndex: 1 + randomGenerator.nextInt(SHAPE_COLORS.length - 1),
-      angle: randomGenerator.nextInt(4) * 90,
-    );
+    currentShape = nextShape != null ? nextShape : Shape.random(panel);
+    nextShape = Shape.random(panel);
     freezed = false;
-    _runner?.cancel();
-    _runner = Timer.periodic(Duration(milliseconds: fallingSpeed), (Timer _timer) {
-      if (!fallingDown()) _timer.cancel();
-    });
-  }
-  bool fallingDown() {
-    double bottom = min(currentShape.bottom + 1, ROWS.toDouble() - 1);
-    double top = bottom - currentShape.height;
-    if (top != currentShape.top) {
-      setState(() { currentShape.top = top; });
-      return true;
-    }
-    return false;
-  }
-  void checkShapeToBottom() {
-    bool isToBottom = currentShape.bottom == ROWS - 1;
-    print('isToBottom: $isToBottom');
-    if (!isToBottom) {
-      for (int x = currentShape.left.toInt(); x <= currentShape.right; x++) {
-        int i = COLS * currentShape.bottom.toInt() + x;
-        if (panel[i] > 0) {
-          isToBottom = true;
-          break;
-        }
-      }
-    }
-    if (isToBottom) {
-      print('到底了');
-      pasteShapeToPanel();
-      newShape();
-    }
+    _toggleFallTimer(true);
+    setState(() {});
   }
   /// 把目前落下的方塊固定到面板上
-  void pasteShapeToPanel() {
-    int top = (currentShape.bottom - currentShape.height).toInt();
+  void mergeShapeToPanel() {
+    int top = currentShape.top.toInt();
     int left = currentShape.left.toInt();
-    for (int y = 0; y < currentShape.height; y++) {
+    int height = currentShape.height.toInt();
+    bool isGameOver = false;
+    for (int y = height - 1; y >= 0; y--) {
       for (int x = 0; x < currentShape.width; x++) {
-        int i = 4 * y + x;
-        if (currentShape.pattern[i] > 0) {
-          print('top + y: ${top + y}');
-          print('left + x: ${left + x}');
-          int panelIndex = COLS * (top + y) + (left + x);
-          panel[panelIndex] = currentShape.colorIndex;
+        if (currentShape.square[y][x] > 0) {
+          int ty = top + y;
+          int tx = left + x;
+          if (ty < 0) {
+            isGameOver = true;
+            break;
+          }
+          panel[ty][tx] = currentShape.square[y][x];
         }
       }
+      if (isGameOver) break;
     }
+    currentShape = null;
+    if (isGameOver) {
+      print('!!!!!!!!!! Game over !!!!!!!!!!!!!!');
+      return;
+    }
+    newShape();
   }
   @override
   void initState() {
     super.initState();
+    panel = List.generate(ROWS, (y) => List.generate(COLS, (x) => 0));
     init();
   }
   @override
   void dispose() {
-    _runner?.cancel();
+    _fallTimer?.cancel();
     super.dispose();
+  }
+  void _toggleFallTimer(bool shouldEnable) {
+    if (!shouldEnable && _fallTimer != null) {
+      _fallTimer.cancel();
+      _fallTimer = null;
+    } else if (shouldEnable) {
+      _fallTimer?.cancel();
+      _fallTimer = Timer.periodic(Duration(milliseconds: _fallingSpeed), _fallingDown);
+    }
+  }
+  void _fallingDown(Timer _timer) {
+      if (currentShape.checkIsToBottom()) {
+        print('到底了, bottom: ${currentShape.bottom}');
+        _timer.cancel();
+        _fallTimer = Timer(Duration(milliseconds: _fallingSpeed), () {
+          mergeShapeToPanel();
+          setState(() {});
+        });
+        return;
+      }
+      currentShape.moveDown();
+      setState(() {});
   }
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     double boxWidth = size.width;
     double boxHeight = size.height - kBottomNavigationBarHeight - kToolbarHeight;
-    return Container(
-      width: boxWidth,
-      height: boxHeight,
-      color: Colors.black,
-      child: Row(
-        children: <Widget>[
-          GamePad(
-            child: CustomPaint(
-              painter: TetrisPainter(
-                state: this,
-                onPainted: checkShapeToBottom,
-              ),
-              size: Size(boxWidth - 100, boxHeight),
-            ),
-            onLeft: () {
-              if (currentShape == null) return;
-              double left = max(currentShape.left - 1, 0);
-              if (left != currentShape.left) {
-                setState(() {
-                  currentShape.left = left;
-                });
-                print('onLeft currentLeft: ${currentShape.left}');
-              }
-            },
-            onRight: () {
-              if (currentShape == null) return;
-              double left = min(currentShape.left + 1, COLS - currentShape.width);
-              if (left != currentShape.left) {
-                setState(() {
-                  currentShape.left = left;
-                });
-                print('onRight currentLeft: ${currentShape.left}');
-              }
-            },
-          ),
-          SizedBox(
-            width: 100,
-            child: Column(
-              children: <Widget>[
-                RaisedButton(
-                  child: Text('新遊戲'),
-                  onPressed: init,
+    return _TetrisStateContainer(
+      data: this,
+      child: Container(
+        width: boxWidth,
+        height: boxHeight,
+        color: Colors.black,
+        child: GamePad(
+          child: Row(
+            children: <Widget>[
+              TertisRenderder(size: Size(boxWidth - 100, boxHeight)),
+              Container(
+                width: 100,
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(color: Colors.white, width: 1.0),
+                  ),
                 ),
-              ],
-            ),
+                child: Column(
+                  children: <Widget>[
+                    RaisedButton(
+                      child: Text('新遊戲'),
+                      onPressed: init,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+          onTap: () {
+            if (currentShape == null) return;
+            currentShape.rotate();
+            setState(() {});
+          },
+          onLeft: () {
+            if (currentShape == null) return;
+            if (currentShape.moveLeft()) setState(() {});
+          },
+          onRight: () {
+            if (currentShape == null) return;
+            if (currentShape.moveRight()) setState(() {});
+          },
+        ),
       ),
     );
   }
 }
 
-class Shape {
-  /// 4 * 4 的方塊 (以一維陣列定義)
-  List<int> square;
-  /// 方塊模板 (以一維陣列定義)
-  List<int> pattern;
-  /// 顯示顏色的編號
-  int colorIndex;
-  /// 目前旋轉的角度，必須是 [0] [90] [180] [270]
-  int angle;
-  /// 方塊所佔的矩形區域
-  Rect _rect;
-  /// 左上角的 X 座標
-  double get left => _rect.left;
-  set left(value) { _rect = Rect.fromLTWH(value, top, width, height); }
-  /// 左上角的 X 座標 + 寬度
-  double get right => _rect.right;
-  /// 左上角的 Y 座標
-  double get top => _rect.top;
-  set top(value) { _rect = Rect.fromLTWH(left, value, width, height); }
-  /// 左上角的 Y 座標 + 高度
-  double get bottom => _rect.bottom;
-  /// 方塊目前的所佔最大寬度
-  double get width => _rect.width;
-  /// 方塊目前的所佔最大高度
-  double get height => _rect.height;
-  Shape({
-    @required this.pattern,
-    @required this.colorIndex,
-    this.angle = 0,
-  }) {
-    square = List.filled(4 * 4, 0);
-    List<double> widths = List.filled(4, 0.0);
-    for (int y = 0; y < 4; y++) {
-      double wStart = -1;
-      double wEnd = -1;
-      for (int x = 0; x < 4; x++) {
-        int i = 4 * y + x;
-        if (pattern[i] == 1) {
-          square[i] = colorIndex;
-          if (wStart == -1) wStart = wEnd = x.toDouble();
-          else wEnd = x.toDouble();
-        }
-      }
-      widths[y] = wEnd >= 0 ? (wEnd - wStart) + 1 : 0;
-    }
-    double maxW = 0;
-    double maxH = 0;
-    widths.sort();
-    widths.forEach((double width) {
-      maxW = max(maxW, width);
-      if (width > 0) maxH++;
-    });
-    double width = maxW;
-    double height = maxH;
-    double left = ((COLS / 2) - (width / 2)).roundToDouble();
-    double top = 0;
-    _rect = Rect.fromLTWH(left, top, width, height);
-    if (angle != 0) rotateTo(angle);
-    print('left: $left');
-    print('top: $top');
-    print('width: $width');
-    print('height: $height');
-    print('angle: $angle');
-  }
-
-  void rotateTo(int angle) {
-    int prevAngle = this.angle;
-    switch (angle) {
-      case 90:
-      case 180:
-      case 270:
-      default:
-    }
-    this.angle = angle;
-  }
+class _TetrisStateContainer extends InheritedWidget {
+  final TetrisState data;
+  _TetrisStateContainer({
+    @required this.data,
+    @required Widget child,
+  }) : super(child: child);
+  @override
+  bool updateShouldNotify(_TetrisStateContainer old) => true;
 }

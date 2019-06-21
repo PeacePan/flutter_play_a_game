@@ -1,24 +1,19 @@
 import 'package:flutter/material.dart';
-import './consts.dart';
-
-typedef void ActionCallback();
+import 'package:flutter/services.dart';
 
 /// 偵測手勢動作判斷魔術方塊操作行為
 class GamePad extends StatefulWidget {
-  /// 一次手勢移動的像素量
-  static double safeZone = 20.0;
-  /// 100ms 才能輸入一次指令
-  static double inputInterval = 100;
   final Widget child;
-  final ActionCallback onUp;
-  final ActionCallback onDown;
-  final ActionCallback onLeft;
-  final ActionCallback onRight;
-  final ActionCallback onUpLeft;
-  final ActionCallback onUpRight;
-  final ActionCallback onDownLeft;
-  final ActionCallback onDownRight;
-  final ActionCallback onSwipeDown;
+  final VoidCallback onUp;
+  final VoidCallback onDown;
+  final VoidCallback onLeft;
+  final VoidCallback onRight;
+  final VoidCallback onUpLeft;
+  final VoidCallback onUpRight;
+  final VoidCallback onDownLeft;
+  final VoidCallback onDownRight;
+  final VoidCallback onSwipeDown;
+  final VoidCallback onTap;
   GamePad({
     @required this.child,
     this.onUp,
@@ -30,13 +25,13 @@ class GamePad extends StatefulWidget {
     this.onDownLeft,
     this.onDownRight,
     this.onSwipeDown,
+    this.onTap,
   });
   @override
   State<StatefulWidget> createState() => _GamePadState();
 }
 
 class _GamePadState extends State<GamePad> {
-  DateTime _lastInputTime = DateTime.now();
   /// 玩家目前操控的方向
   CtrlDirection _currentDirention = CtrlDirection.none;
   /// 玩家首次觸碰螢幕時在螢幕上的 X 軸位置
@@ -56,28 +51,49 @@ class _GamePadState extends State<GamePad> {
     _sx = _sy = _cx = _cy = _tdx = _tdy = null;
     _currentDirention = CtrlDirection.none;
   }
+  void _onKey(RawKeyEvent ev) {
+    print(ev);
+    if (ev is RawKeyUpEvent) {
+      return;
+    }
+    final key = ev.data.physicalKey;
+    if (key == PhysicalKeyboardKey.arrowLeft) {
+      widget.onLeft();
+    } else if (key == PhysicalKeyboardKey.arrowRight) {
+      widget.onRight();
+    } else if (key == PhysicalKeyboardKey.space) {
+      widget.onSwipeDown();
+    }
+  }
+  @override
+  void initState() {
+    super.initState();
+    RawKeyboard.instance.addListener(_onKey);
+  }
+  @override
+  void dispose() {
+    RawKeyboard.instance.removeListener(_onKey);
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       child: widget.child,
+      onTap: () {
+        if (widget.onTap == null) return;
+        widget.onTap();
+      },
       onPanDown: (DragDownDetails details) {
         _sx = _cx = details.globalPosition.dx;
         _sy = _cy = details.globalPosition.dy;
         _tdx = _tdy = 0;
       },
       onPanUpdate: (DragUpdateDetails details) {
-        int mSec = DateTime.now().difference(_lastInputTime).inMilliseconds;
-        if (
-          _sx == null || _sy == null ||
-          mSec < GamePad.inputInterval
-        ) return;
-        _lastInputTime = DateTime.now();
-        
         _cx = details.globalPosition.dx;
         _cy = details.globalPosition.dy;
         _tdx += details.delta.dx;
         _tdy += details.delta.dy;
-        _currentDirention = getDirection(_tdx, _tdy, GamePad.safeZone);
+        _currentDirention = getDirection(_tdx, _tdy, 0);
         if (_currentDirention == CtrlDirection.left && widget.onLeft != null) {
           widget.onLeft();
         } else if (_currentDirention == CtrlDirection.right && widget.onRight != null) {
@@ -96,7 +112,7 @@ class _GamePadState extends State<GamePad> {
           widget.onDownRight();
         }
         // 一次下滑的距離超過設定值時即判斷執行下滑
-        if (details.delta.dy > GamePad.safeZone) {
+        if (details.delta.dy > 0) {
           if (widget.onSwipeDown == null) return;
           widget.onSwipeDown();
         }
@@ -136,4 +152,16 @@ CtrlDirection getDirection(double dx, double dy, double safeZone) {
     }
   }
   return dirention;
+}
+/// 手勢移動時的控制方向定義
+enum CtrlDirection {
+  none,
+  up,
+  upLeft,
+  upRight,
+  right,
+  downRight,
+  down,
+  downLeft,
+  left,
 }
