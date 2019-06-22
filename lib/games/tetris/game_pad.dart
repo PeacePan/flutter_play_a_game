@@ -1,5 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+/// 指令重複觸發的 ms 間隔
+const AUTO_FIRE_INTERVAL = const Duration(milliseconds: 100);
 
 /// 偵測手勢動作判斷魔術方塊操作行為
 class GamePad extends StatefulWidget {
@@ -32,6 +36,8 @@ class GamePad extends StatefulWidget {
 }
 
 class _GamePadState extends State<GamePad> {
+  /// 方向移動時，自動發出控制指令
+  Timer _autoFirer;
   /// 玩家目前操控的方向
   CtrlDirection _currentDirention = CtrlDirection.none;
   /// 玩家首次觸碰螢幕時在螢幕上的 X 軸位置
@@ -50,6 +56,8 @@ class _GamePadState extends State<GamePad> {
   void reset() {
     _sx = _sy = _cx = _cy = _tdx = _tdy = null;
     _currentDirention = CtrlDirection.none;
+    _autoFirer?.cancel();
+    _autoFirer = null;
   }
   void _onKey(RawKeyEvent ev) {
     print(ev);
@@ -65,6 +73,26 @@ class _GamePadState extends State<GamePad> {
       widget.onSwipeDown();
     }
   }
+  void _fireDirention(Timer _timer) {
+    if (_currentDirention == CtrlDirection.none) return;
+    if (_currentDirention == CtrlDirection.left && widget.onLeft != null) {
+      widget.onLeft();
+    } else if (_currentDirention == CtrlDirection.right && widget.onRight != null) {
+      widget.onRight();
+    } else if (_currentDirention == CtrlDirection.up && widget.onUp != null) {
+      widget.onUp();
+    } else if (_currentDirention == CtrlDirection.down && widget.onDown != null) {
+      widget.onDown();
+    } else if (_currentDirention == CtrlDirection.upLeft && widget.onUpLeft != null) {
+      widget.onUpLeft();
+    } else if (_currentDirention == CtrlDirection.upRight && widget.onUpRight != null) {
+      widget.onUpRight();
+    } else if (_currentDirention == CtrlDirection.downLeft && widget.onDownLeft != null) {
+      widget.onDownLeft();
+    } else if (_currentDirention == CtrlDirection.downRight && widget.onDownRight!= null) {
+      widget.onDownRight();
+    }
+  }
   @override
   void initState() {
     super.initState();
@@ -73,6 +101,7 @@ class _GamePadState extends State<GamePad> {
   @override
   void dispose() {
     RawKeyboard.instance.removeListener(_onKey);
+    _autoFirer?.cancel();
     super.dispose();
   }
   @override
@@ -87,6 +116,7 @@ class _GamePadState extends State<GamePad> {
         _sx = _cx = details.globalPosition.dx;
         _sy = _cy = details.globalPosition.dy;
         _tdx = _tdy = 0;
+        _autoFirer = Timer.periodic(AUTO_FIRE_INTERVAL, _fireDirention);
       },
       onPanUpdate: (DragUpdateDetails details) {
         _cx = details.globalPosition.dx;
@@ -94,23 +124,6 @@ class _GamePadState extends State<GamePad> {
         _tdx += details.delta.dx;
         _tdy += details.delta.dy;
         _currentDirention = getDirection(_tdx, _tdy, 0);
-        if (_currentDirention == CtrlDirection.left && widget.onLeft != null) {
-          widget.onLeft();
-        } else if (_currentDirention == CtrlDirection.right && widget.onRight != null) {
-          widget.onRight();
-        } else if (_currentDirention == CtrlDirection.up && widget.onUp != null) {
-          widget.onUp();
-        } else if (_currentDirention == CtrlDirection.down && widget.onDown != null) {
-          widget.onDown();
-        } else if (_currentDirention == CtrlDirection.upLeft && widget.onUpLeft != null) {
-          widget.onUpLeft();
-        } else if (_currentDirention == CtrlDirection.upRight && widget.onUpRight != null) {
-          widget.onUpRight();
-        } else if (_currentDirention == CtrlDirection.downLeft && widget.onDownLeft != null) {
-          widget.onDownLeft();
-        } else if (_currentDirention == CtrlDirection.downRight && widget.onDownRight!= null) {
-          widget.onDownRight();
-        }
         // 一次下滑的距離超過設定值時即判斷執行下滑
         if (details.delta.dy > 0) {
           if (widget.onSwipeDown == null) return;

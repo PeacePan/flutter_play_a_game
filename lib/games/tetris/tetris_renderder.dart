@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import './shape.dart';
+import './tetris_panel.dart';
 import './tetris.dart';
 
 class TertisRenderder extends StatefulWidget {
@@ -23,8 +23,8 @@ class _TertisRenderderState extends State<TertisRenderder> {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      foregroundPainter: TetrisPainter(
-        state: Tetris.of(context),
+      foregroundPainter: _TetrisPainter(
+        panel: Tetris.panelOf(context),
       ),
       painter: TetrisBGPainter(),
       size: widget.size,
@@ -33,12 +33,12 @@ class _TertisRenderderState extends State<TertisRenderder> {
 }
 
 /// 處理魔術方塊的畫面渲染
-class TetrisPainter extends CustomPainter {
-  final TetrisState state;
+class _TetrisPainter extends CustomPainter {
+  final TetrisPanel panel;
   Paint mainPaint;
 
-  TetrisPainter({
-    this.state,
+  _TetrisPainter({
+    @required this.panel,
   }) {
     mainPaint = Paint()
       ..color = Colors.white
@@ -66,13 +66,13 @@ class TetrisPainter extends CustomPainter {
   }
   @override
   void paint(Canvas canvas, Size size) {
-    final shape = state.currentShape;
+    final grids = panel.grids;
+    final shape = panel.currentShape;
     double blockWidth = size.width / COLS;
     double blockHeight = size.height / ROWS;
-    canvas.save();
     for (int y = 0; y < ROWS; y++) {
       for (int x = 0; x < COLS; x++) {
-        int colorIndex = state.panel[y][x];
+        int colorIndex = grids[y][x];
         if (colorIndex > 0) {
           mainPaint.color = SHAPE_COLORS[colorIndex];
           drawBlock(
@@ -86,49 +86,49 @@ class TetrisPainter extends CustomPainter {
       }
     }
     if (shape != null) {
-      for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++) {
-          int colorIndex = shape.square[y][x];
+      for (int y = 0; y < shape.height; y++) {
+        for (int x = 0; x < shape.width; x++) {
+          int colorIndex = shape.block[y][x];
           if (colorIndex > 0) {
             mainPaint.color = SHAPE_COLORS[colorIndex];
             drawBlock(
               canvas, mainPaint,
-              x: shape.left.toInt() + x,
-              y: shape.top.toInt() + y,
+              x: panel.currentX + x,
+              y: panel.currentY + y,
               blockWidth: blockWidth,
               blockHeight: blockHeight,
             );
           }
         }
       }
-      mainPaint.color = Colors.white;
-      canvas.drawLine(
-        Offset(0, shape.bottom * blockHeight),
-        Offset(size.width, shape.bottom * blockHeight),
-        mainPaint,
-      );
-      canvas.drawLine(
-        Offset(shape.left * blockWidth, 0),
-        Offset(shape.left * blockWidth, size.height),
-        mainPaint,
-      );
-      canvas.drawLine(
-        Offset(shape.right * blockWidth, 0),
-        Offset(shape.right * blockWidth, size.height),
-        mainPaint,
-      );
-      canvas.restore();
+      // mainPaint.color = Colors.white;
+      // canvas.drawLine(
+      //   Offset(panel.currentX * blockWidth, 0),
+      //   Offset(panel.currentX * blockWidth, size.height),
+      //   mainPaint,
+      // );
+      // canvas.drawLine(
+      //   Offset(panel.currentRight * blockWidth, 0),
+      //   Offset(panel.currentRight * blockWidth, size.height),
+      //   mainPaint,
+      // );
+      // canvas.drawLine(
+      //   Offset(0, panel.currentBottom * blockHeight),
+      //   Offset(size.width, panel.currentBottom * blockHeight),
+      //   mainPaint,
+      // );
     }
   }
   @override
-  bool shouldRepaint(TetrisPainter oldDelegate) => true;
+  bool shouldRepaint(_TetrisPainter oldDelegate) => true;
 }
 
 class TetrisBGPainter extends CustomPainter {
   Paint mainPaint;
   TetrisBGPainter() {
     mainPaint = Paint()
-      ..color = Colors.grey[300]
+      // ..color = Colors.grey[300]
+      ..color = Colors.black
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 1;
