@@ -186,7 +186,7 @@ class TetrisPanel {
     final block = currentShape.block;
     int blockY = fromY - toY >= 0 ? 0 : currentShape.height - 1;
     // 檢查目前方塊的水平軸是否都能移動過去
-    for (int x = 0; x < currentShape.width; x--) {
+    for (int x = 0; x < currentShape.width; x++) {
       // 只要有一個位置衝突就不能移動過去
       if (grids[toY][currentX + x] > 0 && block[blockY][x] > 0) {
         return false;
