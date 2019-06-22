@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import './game_pad.dart';
-import './tetris_panel.dart';
+import './tetris_data.dart';
 import './tetris_renderder.dart';
 
 /// 可堆疊的總行數
@@ -11,10 +11,10 @@ const COLS = 10;
 
 class Tetris extends StatefulWidget {
 	Tetris({ Key key, }) : super(key: key);
-  static TetrisPanel panelOf(BuildContext context) {
+  static TetrisData dataOf(BuildContext context) {
     final _TetrisStateContainer widgetInstance =
       context.inheritFromWidgetOfExactType(_TetrisStateContainer);
-    return widgetInstance.panel;
+    return widgetInstance.data;
   }
 	@override
 	TetrisState createState() => TetrisState();
@@ -22,7 +22,7 @@ class Tetris extends StatefulWidget {
 
 class TetrisState extends State<Tetris> {
   /// 魔術方塊面板資料
-  TetrisPanel panel;
+  TetrisData data;
   /// 魔術方塊下降間隔的計時器
   Timer _fallTimer;
   /// 用毫秒數來代表墜落速度
@@ -30,17 +30,17 @@ class TetrisState extends State<Tetris> {
   /// 禁止移動
   bool _freezeMove;
   TetrisState() {
-    this.panel = TetrisPanel(rows: ROWS, cols: COLS);
+    this.data = TetrisData(rows: ROWS, cols: COLS);
     this._freezeMove = false;
   }
   void init() {
     _fallingSpeed = 100;
     _freezeMove = false;
-    panel.reset();
+    data.reset();
     putInShape();
   }
   void putInShape() {
-    panel.putInShape();
+    data.putInShape();
     _toggleFallTimer(true);
     setState(() {});
   }
@@ -64,35 +64,35 @@ class TetrisState extends State<Tetris> {
     }
   }
   void _fallingDown(Timer _timer) {
-      if (panel.shouldFreeze()) {
+      if (data.shouldFreeze()) {
         _freezeMove = true;
         print('到底了');
-        print('bottom: ${panel.currentBottom}');
+        print('bottom: ${data.currentBottom}');
         _toggleFallTimer(false);
         /// 到底時會有一個方塊要置底的休息時間
         _fallTimer = Timer(Duration(milliseconds: _fallingSpeed), () {
-          panel.mergeShapeToPanel();
+          data.mergeShapeToPanel();
           setState(() {});
-          if (panel.isGameOver) {
+          if (data.isGameOver) {
             print('!!!!! 遊戲結束 !!!!!');
             return;
           }
-          panel.putInShape();
+          data.putInShape();
           _toggleFallTimer(true);
           _freezeMove = false;
         });
         return;
       }
-      panel.moveCurrentShapeDown();
+      data.moveCurrentShapeDown();
       setState(() {});
   }
   void _execMoveLeft() {
     if (_freezeMove) return;
-    if (panel.moveCurrentShapeLeft()) setState(() {});
+    if (data.moveCurrentShapeLeft()) setState(() {});
   }
   void _execMoveRight() {
     if (_freezeMove) return;
-    if (panel.moveCurrentShapeRight()) setState(() {});
+    if (data.moveCurrentShapeRight()) setState(() {});
   }
   @override
   Widget build(BuildContext context) {
@@ -100,7 +100,7 @@ class TetrisState extends State<Tetris> {
     double boxWidth = size.width;
     double boxHeight = size.height - kBottomNavigationBarHeight - kToolbarHeight;
     return _TetrisStateContainer(
-      panel: this.panel,
+      data: this.data,
       child: Container(
         width: boxWidth,
         height: boxHeight,
@@ -128,7 +128,7 @@ class TetrisState extends State<Tetris> {
             ],
           ),
           onTap: () {
-            if (panel.rotateCurrentShape()) setState(() {});
+            if (data.rotateCurrentShape()) setState(() {});
           },
           onLeft: _execMoveLeft,
           onDownLeft: _execMoveLeft,
@@ -149,9 +149,9 @@ class TetrisState extends State<Tetris> {
 }
 
 class _TetrisStateContainer extends InheritedWidget {
-  final TetrisPanel panel;
+  final TetrisData data;
   _TetrisStateContainer({
-    @required this.panel,
+    @required this.data,
     @required Widget child,
   }) : super(child: child);
   @override

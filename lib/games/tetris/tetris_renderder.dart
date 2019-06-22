@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import './tetris_panel.dart';
+import './tetris_data.dart';
 import './tetris.dart';
 
 class TertisRenderder extends StatefulWidget {
@@ -24,7 +24,7 @@ class _TertisRenderderState extends State<TertisRenderder> {
   Widget build(BuildContext context) {
     return CustomPaint(
       foregroundPainter: _TetrisPainter(
-        panel: Tetris.panelOf(context),
+        data: Tetris.dataOf(context),
       ),
       painter: TetrisBGPainter(),
       size: widget.size,
@@ -34,11 +34,11 @@ class _TertisRenderderState extends State<TertisRenderder> {
 
 /// 處理魔術方塊的畫面渲染
 class _TetrisPainter extends CustomPainter {
-  final TetrisPanel panel;
+  final TetrisData data;
   Paint mainPaint;
 
   _TetrisPainter({
-    @required this.panel,
+    @required this.data,
   }) {
     mainPaint = Paint()
       ..color = Colors.white
@@ -66,13 +66,13 @@ class _TetrisPainter extends CustomPainter {
   }
   @override
   void paint(Canvas canvas, Size size) {
-    final grids = panel.grids;
-    final shape = panel.currentShape;
+    final panel = data.panel;
+    final shape = data.currentShape;
     double blockWidth = size.width / COLS;
     double blockHeight = size.height / ROWS;
     for (int y = 0; y < ROWS; y++) {
       for (int x = 0; x < COLS; x++) {
-        int colorIndex = grids[y][x];
+        int colorIndex = panel[y][x];
         if (colorIndex > 0) {
           mainPaint.color = SHAPE_COLORS[colorIndex];
           drawBlock(
@@ -93,8 +93,8 @@ class _TetrisPainter extends CustomPainter {
             mainPaint.color = SHAPE_COLORS[colorIndex];
             drawBlock(
               canvas, mainPaint,
-              x: panel.currentX + x,
-              y: panel.currentY + y,
+              x: data.currentX + x,
+              y: data.currentY + y,
               blockWidth: blockWidth,
               blockHeight: blockHeight,
             );

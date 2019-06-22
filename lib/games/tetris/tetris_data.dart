@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 /// 隨機產生器種子
 final randomGenerator = Random(DateTime.now().microsecondsSinceEpoch);
 
-class TetrisPanel {
+class TetrisData {
   final int rows;
   final int cols;
   int get totalGrids => rows * cols;
   /// 魔術方塊的面板格子資料，紀錄每個格子資料
-  List<List<int>> grids;
+  List<List<int>> panel;
   /// 目前落下的魔術方塊
   Shape currentShape;
   /// 目前落下的方塊位置
@@ -40,11 +40,11 @@ class TetrisPanel {
   }
   /// 判斷遊戲是否結束
   bool get isGameOver => currentY < 0;
-  TetrisPanel({
+  TetrisData({
     @required this.rows,
     @required this.cols,
   }) {
-    this.grids = List.generate(rows, (y) => List.generate(cols, (x) => 0));
+    this.panel = List.generate(rows, (y) => List.generate(cols, (x) => 0));
     this._shapes = [];
     this._nextShape = Shape.random();
   }
@@ -52,7 +52,7 @@ class TetrisPanel {
   void reset() {
     for (int y = 0; y < rows; y++) {
       for (int x = 0; x < cols; x++) {
-        grids[y][x] = 0;
+        panel[y][x] = 0;
       }
     }
     _shapes.clear();
@@ -140,7 +140,7 @@ class TetrisPanel {
         if (ty > 0 && ty < rows) {
           for (int x = 0; x < currentShape.width; x++) {
             int tx = (currentX + x).toInt();
-            if (grids[ty][tx] > 0 && currentShape.block[y][x] > 0) {
+            if (panel[ty][tx] > 0 && currentShape.block[y][x] > 0) {
               hasBlock = true;
             }
           }
@@ -159,7 +159,7 @@ class TetrisPanel {
           int ty = currentY + y;
           int tx = currentX + x;
           if (ty < 0) break;
-          grids[ty][tx] = block[y][x];
+          panel[ty][tx] = block[y][x];
         }
       }
     }
@@ -174,7 +174,7 @@ class TetrisPanel {
     // 檢查目前方塊的垂直軸是否都能移動過去
     for (int y = currentShape.height - 1; y >= 0; y--) {
       // 只要有一個位置衝突就不能移動過去
-      if (grids[currentY + y][toX] > 0 && block[y][blockX] > 0) {
+      if (panel[currentY + y][toX] > 0 && block[y][blockX] > 0) {
         return false;
       }
     }
@@ -182,13 +182,13 @@ class TetrisPanel {
   }
   /// 檢查目前的方塊是否可移動至目標 Y 軸位置
   bool _canMoveToY(int fromY, int toY) {
-    if (currentShape == null || currentX < 0) return false;
+    if (currentShape == null || toY < 0) return false;
     final block = currentShape.block;
     int blockY = fromY - toY >= 0 ? 0 : currentShape.height - 1;
     // 檢查目前方塊的水平軸是否都能移動過去
     for (int x = 0; x < currentShape.width; x++) {
       // 只要有一個位置衝突就不能移動過去
-      if (grids[toY][currentX + x] > 0 && block[blockY][x] > 0) {
+      if (panel[toY][currentX + x] > 0 && block[blockY][x] > 0) {
         return false;
       }
     }
