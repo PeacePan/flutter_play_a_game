@@ -10,12 +10,12 @@ class TetrisData {
   int get totalGrids => rows * cols;
   /// 魔術方塊的面板格子資料，紀錄每個格子資料
   List<List<int>> panel;
+  /// 下一個要落下的方塊
+  Shape nextShape;
   /// 目前落下的魔術方塊
   Shape currentShape;
   /// 目前落下的方塊位置
   Offset _currentOffset;
-  /// 下一個要落下的方塊
-  Shape _nextShape;
   /// 面板上所有的魔術方塊
   List<Shape> _shapes;
   /// 落下方塊所在的 X 座標
@@ -46,7 +46,7 @@ class TetrisData {
   }) {
     this.panel = List.generate(rows, (y) => List.generate(cols, (x) => 0));
     this._shapes = [];
-    this._nextShape = Shape.random();
+    this.nextShape = Shape.random();
   }
   /// 重置資料，將所有的資料回歸原始狀態
   void reset() {
@@ -57,18 +57,22 @@ class TetrisData {
     }
     _shapes.clear();
     currentShape = _currentOffset = null;
-    _nextShape = Shape.random();
+    nextShape = Shape.random();
+    int rotateCount = randomGenerator.nextInt(4);
+    while (--rotateCount >= 0) { nextShape.rotate(); }
   }
   /// 將下一個方塊放進遊戲面板裡，並同時產生下一個魔術方塊
   void putInShape() {
-    currentShape = _nextShape;
+    currentShape = nextShape;
     _currentOffset = Offset(
       // 初始 X 軸位置置中
       ((cols / 2) - (currentShape.width / 2)).roundToDouble(),
       // 初始 Y 軸位置完全隱藏方塊
       -currentShape.height.toDouble(),
     );
-    _nextShape = Shape.random();
+    nextShape = Shape.random();
+    int rotateCount = randomGenerator.nextInt(4);
+    while (--rotateCount >= 0) { nextShape.rotate(); }
   }
   /// 往左移動目前的魔術方塊
   bool moveCurrentShapeLeft() {
@@ -126,7 +130,40 @@ class TetrisData {
   /// 旋轉目前的魔術方塊
   bool rotateCurrentShape() {
     if (currentShape == null) return false;
-    return currentShape.rotate();
+    bool canRotate = true;
+    /// 先判斷旋轉後的方塊是否合法，合法時才能旋轉
+    Shape rotatedShape = Shape(
+      patterns: currentShape.patterns,
+      patternIndex: currentShape.patternIndex,
+      colorIndex: currentShape.colorIndex,
+    );
+    rotatedShape.rotate();
+    rotatedShape.forEachBlock((value, x, y) {
+      if (currentX + x < 0) {
+        _currentOffset = Offset(
+          0,
+          currentY.toDouble(),
+        );
+      } else if (currentX + x > cols - rotatedShape.width) {
+        _currentOffset = Offset(
+          (cols - rotatedShape.width).toDouble(),
+          currentY.toDouble(),
+        );
+      }
+      int ty = currentY + y;
+      int tx = currentX + x;
+      if (
+        ty >= 0 && ty < rows &&
+        tx >= 0 && tx < cols &&
+        panel[ty][tx] > 0 && value > 0
+      ) {
+        canRotate = false;
+      }
+    }, reverse: true);
+    if (canRotate) {
+      currentShape = rotatedShape;
+    }
+    return canRotate;
   } 
   /// 檢查目前的魔術方塊是否卡住必須固定
   bool shouldFreeze() {
@@ -135,11 +172,11 @@ class TetrisData {
       // 從方塊的下方往上找
       for (int y = currentShape.height - 1; y >= 0; y--) {
         bool hasBlock = false;
-        int ty = (currentY + y + 1).toInt();
+        int ty = currentY + y + 1;
         // 往面板下一格找，如果面板上有方塊，代表無法再往下
         if (ty > 0 && ty < rows) {
           for (int x = 0; x < currentShape.width; x++) {
-            int tx = (currentX + x).toInt();
+            int tx = currentX + x;
             if (panel[ty][tx] > 0 && currentShape.block[y][x] > 0) {
               hasBlock = true;
             }
@@ -166,15 +203,52 @@ class TetrisData {
     _shapes.add(currentShape);
     currentShape = null;
   }
+  /// 檢查是否有填滿，回傳得到的分數
+  int cleanLines() {
+    List<int> lines = [];
+    for (int y = rows - 1; y >= 0; y--) {
+      bool isFull = true;
+      for (int x = 0; x < cols; x++) {
+        if (panel[y][x] == 0) {
+          isFull = false;
+          break;
+        }
+      }
+      if (isFull) lines.add(y);
+    }
+    int score = 0;
+    if (lines.length > 0) {
+      /// 每多一行疊加 100 分
+      int bonus = 0;
+      lines.forEach((y) {
+        panel[y].fillRange(0, cols - 1, 0);
+        score += 100 + bonus;
+        bonus += 100;
+      });
+      int lineTop = lines.last - 1;
+      for (int y = lineTop; y >= 0; y--) {
+        for (int x = 0; x < cols; x++) {
+          panel[y + lines.length][x] = panel[y][x];
+          panel[y][x] = 0;
+        }
+      }
+    }
+    return score;
+  }
   /// 檢查目前的方塊是否可移動至目標 X 軸位置
   bool _canMoveToX(int fromX, int toX) {
-    if (currentShape == null || currentY < 0) return false;
+    if (currentShape == null) return false;
     final block = currentShape.block;
     int blockX = fromX - toX >= 0 ? 0 : currentShape.width - 1;
     // 檢查目前方塊的垂直軸是否都能移動過去
     for (int y = currentShape.height - 1; y >= 0; y--) {
+      if (currentY + y < 0) continue;
+      int blockValue = block[y][blockX];
+      if (blockValue == 0) {
+        blockValue = block[y][fromX - toX >= 0 ? blockX + 1 : blockX - 1];
+      }
       // 只要有一個位置衝突就不能移動過去
-      if (panel[currentY + y][toX] > 0 && block[y][blockX] > 0) {
+      if (panel[currentY + y][toX] > 0 && blockValue > 0) {
         return false;
       }
     }
@@ -195,7 +269,7 @@ class TetrisData {
     return true;
   }
 }
-
+typedef void ShapeForEachCallback(int value, int x, int y);
 class Shape {
   /// 顯示顏色的編號
   final int colorIndex;
@@ -218,29 +292,46 @@ class Shape {
   }) {
     this.block = List.generate(PATTERN_SIZE, (y) => List.generate(PATTERN_SIZE, (x) => 0));
     List<int> pattern = patterns[patternIndex];
-    for (int y = 0; y < PATTERN_SIZE; y++) {
-      for (int x = 0; x < PATTERN_SIZE; x++) {
+    forEachBlock((value, x, y) {
         int i = PATTERN_SIZE * y + x;
         block[y][x] = pattern[i] == 1 ? colorIndex : 0;
-      }
-    }
+    }, ignoreZero: false);
     updateSize();
   }
-  /// 旋轉方塊
-  bool rotate() {
-    patternIndex = patternIndex + 1 >= patterns.length ? 0 : patternIndex + 1;
-    List<int> pattern = patterns[patternIndex];
-    for (int y = 0; y < PATTERN_SIZE; y++) {
-      for (int x = 0; x < PATTERN_SIZE; x++) {
-        int i = PATTERN_SIZE * y + x;
-        block[y][x] = pattern[i] == 1 ? colorIndex : 0;
+  void forEachBlock(ShapeForEachCallback callback, {
+    ignoreZero = true,
+    reverse = false,
+  }) {
+    if (reverse) {
+      for (int y = PATTERN_SIZE - 1; y >= 0; y--) {
+        for (int x = PATTERN_SIZE - 1; x >= 0; x--) {
+          if (ignoreZero && block[y][x] == 0) continue;
+          callback(block[y][x], x, y);
+        }
+      }
+    } else {
+      for (int y = 0; y < PATTERN_SIZE; y++) {
+        for (int x = 0; x < PATTERN_SIZE; x++) {
+          if (ignoreZero && block[y][x] == 0) continue;
+          callback(block[y][x], x, y);
+        }
       }
     }
+  }
+  /// 旋轉方塊
+  void rotate() {
+    patternIndex = patternIndex + 1 >= patterns.length ? 0 : patternIndex + 1;
+    List<int> pattern = patterns[patternIndex];
+    forEachBlock((value, x, y) {
+        int i = PATTERN_SIZE * y + x;
+        block[y][x] = pattern[i] == 1 ? colorIndex : 0;
+    }, ignoreZero: false);
     updateSize();
-    return true;
   }
   /// 更新方塊的寬高資訊
   void updateSize() {
+    double _offsetX = 0;
+    double _offsetY = 0;
     List<double> widths = List.filled(PATTERN_SIZE, 0.0);
     List<double> heights = List.filled(PATTERN_SIZE, 0.0);
     for (int x = 0; x < PATTERN_SIZE; x++) {
@@ -248,7 +339,9 @@ class Shape {
         if (block[y][x] > 0) {
           widths[x] = heights[y] = 1;
         }
+        if (heights[y] == 1 && _offsetY == 0) _offsetY = y.toDouble();
       }
+      if (widths[x] == 1 && _offsetX == 0) _offsetX = x.toDouble();
     }
     double width = widths.reduce((val, elem) => val + elem);
     double height = heights.reduce((val, elem) => val + elem);
@@ -262,19 +355,14 @@ class Shape {
     final shape = Shape(
       patterns: patterns,
       patternIndex: patternIndex,
-      colorIndex: 1 + randomGenerator.nextInt(SHAPE_COLORS.length - 1),
+      colorIndex: 1 + randomGenerator.nextInt(TETRIS_COLORS.length - 1),
     );
-    int rotateCount = randomGenerator.nextInt(4);
-    while (rotateCount > 0) {
-      shape.rotate();
-      rotateCount--;
-    }
     return shape;
   }
 }
 
 /// 顯示的方塊顏色
-const List<Color> SHAPE_COLORS = [
+const List<Color> TETRIS_COLORS = [
     Colors.black,
     Colors.cyan,
     Colors.orange,
