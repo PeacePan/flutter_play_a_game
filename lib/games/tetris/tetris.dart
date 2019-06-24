@@ -127,8 +127,8 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
     }
   }
   /// 到底時會有一個方塊要置底的休息時間
-  void _afterRest () {
-    if (!data.shouldFreeze()) {
+  void _afterRest() {
+    if (data.canMoveDown) {
       _execMoveDown(_restTimer);
       _toggleRestTimer(true);
       return;
@@ -152,25 +152,23 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
   }
   /// 直接執行讓方塊直接落下
   void _execFallingDown() {
-    _freezeMove = true;
     _toggleFallTimer(false);
-    do {
-      data.moveCurrentShapeDown();
-    } while (!data.shouldFreeze());
+    _freezeMove = true;
+    data.fallingDown();
     _toggleRestTimer(true);
     setState(() {});
   }
   /// 執行方塊落下一格的處理
   void _execMoveDown(Timer _timer) {
-      if (data.shouldFreeze()) {
-        _freezeMove = true;
-        print('到底了, bottom: ${data.currentBottom}');
-        _toggleFallTimer(false);
-        _toggleRestTimer(true);
-        return;
-      }
-      data.moveCurrentShapeDown();
-      setState(() {});
+    if (!data.canMoveDown) {
+      _freezeMove = true;
+      print('到底了, bottom: ${data.currentBottom}');
+      _toggleFallTimer(false);
+      _toggleRestTimer(true);
+      return;
+    }
+    data.moveCurrentShapeDown();
+    setState(() {});
   }
   /// 執行往左移動
   void _execMoveLeft() {

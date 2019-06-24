@@ -89,23 +89,6 @@ class _TetrisPainter extends CustomPainter {
   _TetrisPainter({
     @required this.data,
   });
-  /// 找到方塊能直接落下的 Y 軸位移量
-  int _findOffsetY() {
-    List<List<int>> panel = data.panel;
-    Shape shape = data.currentShape;
-    int offsetY = data.currentY + 1;
-    for (; offsetY <= data.rows - shape.height; offsetY++) {
-      bool blocked = false;
-      shape.forEachBlock((value, x, y) {
-        if (offsetY + y < 0) return;
-        if (panel[offsetY + y][data.currentX + x] > 0) {
-          blocked = true;
-        }
-      }, reverse: true);
-      if (blocked) return offsetY - 1;
-    }
-    return data.rows - shape.height;
-  }
   @override
   void paint(Canvas canvas, Size size) {
     List<List<int>> panel = data.panel;
@@ -132,7 +115,7 @@ class _TetrisPainter extends CustomPainter {
       }
     }
     if (shape != null) {
-      int offsetY = _findOffsetY();
+      int fallingDownY = data.findFallingDownY();
       shape.forEachBlock((value, x, y) {
         int colorIndex = shape.block[y][x];
         if (colorIndex > 0) {
@@ -152,7 +135,7 @@ class _TetrisPainter extends CustomPainter {
             canvas, paint,
             offset: Offset(
               (data.currentX + x) * blockSize.width,
-              (offsetY + y) * blockSize.height,
+              (fallingDownY + y) * blockSize.height,
             ),
             size: blockWithBorderSize,
           );

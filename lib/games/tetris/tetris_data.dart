@@ -40,6 +40,8 @@ class TetrisData {
   }
   /// 判斷遊戲是否結束
   bool get isGameOver => currentY < 0;
+  /// 是否可往下移動
+  bool get canMoveDown => currentY + 1 <= findFallingDownY();
   TetrisData({
     @required this.rows,
     @required this.cols,
@@ -111,21 +113,19 @@ class TetrisData {
   }
   /// 往下移動目前的魔術方塊
   bool moveCurrentShapeDown() {
-    if (currentShape == null) return false;
-    int nextY = currentY + 1;
-    int nextBottom = nextY + currentShape.height;
-    // 如果要往下移動的位置，目前面板已有方塊，則不處理移動
-    if (
-      nextY + currentShape.height <= rows &&
-      _canMoveToY(currentBottom - 1, nextBottom - 1)
-    ) {
-      _currentOffset = Offset(
-        currentX.toDouble(),
-        nextY.toDouble(),
-      );
-      return true;
-    }
-    return false;
+    if (!(currentShape != null && canMoveDown)) return false;
+    _currentOffset = Offset(
+      currentX.toDouble(),
+      (currentY + 1).toDouble(),
+    );
+    return true;
+  }
+  /// 將目前的方塊直接落下
+  void fallingDown() {
+    _currentOffset = Offset(
+      currentX.toDouble(),
+      findFallingDownY().toDouble(),
+    );
   }
   /// 旋轉目前的魔術方塊
   bool rotateCurrentShape() {
@@ -164,30 +164,8 @@ class TetrisData {
       currentShape = rotatedShape;
     }
     return canRotate;
-  } 
-  /// 檢查目前的魔術方塊是否卡住必須固定
-  bool shouldFreeze() {
-    bool isToBottom = currentBottom + 1 > rows;
-    if (!isToBottom) {
-      // 從方塊的下方往上找
-      for (int y = currentShape.height - 1; y >= 0; y--) {
-        bool hasBlock = false;
-        int ty = currentY + y + 1;
-        // 往面板下一格找，如果面板上有方塊，代表無法再往下
-        if (ty > 0 && ty < rows) {
-          for (int x = 0; x < currentShape.width; x++) {
-            int tx = currentX + x;
-            if (panel[ty][tx] > 0 && currentShape.block[y][x] > 0) {
-              hasBlock = true;
-            }
-          }
-        }
-        if (hasBlock) return true;
-      }
-    }
-    return isToBottom;
   }
-  /// 把目前落下的方塊固定到面板上
+  /// 把目前的方塊固定到面板上
   void mergeShapeToPanel() {
     final block = currentShape.block;
     for (int y = currentShape.height - 1; y >= 0; y--) {
@@ -235,6 +213,22 @@ class TetrisData {
     }
     return score;
   }
+  /// 找到方塊能直接落下的 Y 軸位移量
+  int findFallingDownY() {
+    for (int fY = currentY + 1; fY <= rows - currentShape.height; fY++) {
+      bool blocked = false;
+      currentShape.forEachBlock((value, x, y) {
+        if (fY + y < 0) return;
+        if (panel[fY + y][currentX + x] > 0) {
+          blocked = true;
+        }
+      }, reverse: true);
+      if (blocked) {
+        return fY - 1;
+      }
+    }
+    return rows - currentShape.height;
+  }
   /// 檢查目前的方塊是否可移動至目標 X 軸位置
   bool _canMoveToX(int fromX, int toX) {
     if (currentShape == null) return false;
@@ -249,20 +243,6 @@ class TetrisData {
       }
       // 只要有一個位置衝突就不能移動過去
       if (panel[currentY + y][toX] > 0 && blockValue > 0) {
-        return false;
-      }
-    }
-    return true;
-  }
-  /// 檢查目前的方塊是否可移動至目標 Y 軸位置
-  bool _canMoveToY(int fromY, int toY) {
-    if (currentShape == null || toY < 0) return false;
-    final block = currentShape.block;
-    int blockY = fromY - toY >= 0 ? 0 : currentShape.height - 1;
-    // 檢查目前方塊的水平軸是否都能移動過去
-    for (int x = 0; x < currentShape.width; x++) {
-      // 只要有一個位置衝突就不能移動過去
-      if (panel[toY][currentX + x] > 0 && block[blockY][x] > 0) {
         return false;
       }
     }

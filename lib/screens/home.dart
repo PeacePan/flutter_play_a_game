@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_minesweeper/games/mineaweeper/minesweeper.dart';
-import 'package:flutter_minesweeper/games/number_2048/number_2048.dart';
+// import 'package:flutter_minesweeper/games/number_2048/number_2048.dart';
 import 'package:flutter_minesweeper/games/tetris/tetris.dart';
 import 'package:flutter_minesweeper/games/tic_tac_toe/tic_tac_toe.dart';
 import 'package:flutter_minesweeper/layout.dart';
@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Minesweeper(),
         TicTacToe(),
         Tetris(),
-        Number2048(),
+        // Number2048(),
       ],
     );
   }
