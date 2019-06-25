@@ -1,4 +1,4 @@
-# flutter_minesweeper
+# flutter_play_a_game
 
 A new Flutter project.
 

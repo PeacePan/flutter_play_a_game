@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_minesweeper/configs.dart';
-import 'package:flutter_minesweeper/main.dart';
+import 'package:flutter_play_a_game/configs.dart';
+import 'package:flutter_play_a_game/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class InitialScreen extends StatefulWidget {

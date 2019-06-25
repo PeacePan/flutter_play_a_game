@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_minesweeper/main.dart';
+import 'package:flutter_play_a_game/main.dart';
 
 void main() {
   testWidgets('踩地雷 - 開始新遊戲', (WidgetTester tester) async {

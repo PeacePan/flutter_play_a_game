@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_minesweeper/main.dart';
-import 'package:flutter_minesweeper/screens/settings.dart';
+import 'package:flutter_play_a_game/main.dart';
+import 'package:flutter_play_a_game/screens/settings.dart';
 
 const ICON_TITLES = [
   '踩地雷',

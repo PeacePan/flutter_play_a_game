@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_minesweeper/games/mineaweeper/minesweeper.dart';
-// import 'package:flutter_minesweeper/games/number_2048/number_2048.dart';
-import 'package:flutter_minesweeper/games/tetris/tetris.dart';
-import 'package:flutter_minesweeper/games/tic_tac_toe/tic_tac_toe.dart';
-import 'package:flutter_minesweeper/layout.dart';
+import 'package:flutter_play_a_game/games/mineaweeper/minesweeper.dart';
+// import 'package:flutter_play_a_game/games/number_2048/number_2048.dart';
+import 'package:flutter_play_a_game/games/tetris/tetris.dart';
+import 'package:flutter_play_a_game/games/tic_tac_toe/tic_tac_toe.dart';
+import 'package:flutter_play_a_game/layout.dart';
 
 class HomeScreen extends StatefulWidget {
 	HomeScreen({ Key key, }) : super(key: key);

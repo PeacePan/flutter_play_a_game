@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_minesweeper/configs.dart';
-import 'package:flutter_minesweeper/main.dart';
-import 'package:flutter_minesweeper/utlis.dart';
-import 'package:flutter_minesweeper/widgets/bonuce_icon.dart';
+import 'package:flutter_play_a_game/configs.dart';
+import 'package:flutter_play_a_game/main.dart';
+import 'package:flutter_play_a_game/utlis.dart';
+import 'package:flutter_play_a_game/widgets/bonuce_icon.dart';
 
 const int ROWS = 14;
 const int COLUMNS = 12;

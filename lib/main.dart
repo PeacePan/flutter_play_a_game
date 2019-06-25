@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_minesweeper/configs.dart';
-import 'package:flutter_minesweeper/screens/home.dart';
-import 'package:flutter_minesweeper/screens/initial.dart';
+import 'package:flutter_play_a_game/configs.dart';
+import 'package:flutter_play_a_game/screens/home.dart';
+import 'package:flutter_play_a_game/screens/initial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(App());

@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_minesweeper/utlis.dart';
+import 'package:flutter_play_a_game/utlis.dart';
 
 const int GRIDS = 9;
 /// 隨機產生器種子

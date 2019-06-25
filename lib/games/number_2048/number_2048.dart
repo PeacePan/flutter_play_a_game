@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_minesweeper/widgets/swipeable.dart';
+import 'package:flutter_play_a_game/widgets/swipeable.dart';
 
 const GRIDS = 3;
 const PANNING_LIMIT = 20;

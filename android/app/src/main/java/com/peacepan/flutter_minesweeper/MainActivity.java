@@ -1,4 +1,4 @@
-package com.peacepan.flutter_minesweeper;
+package com.peacepan.flutter_play_a_game;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

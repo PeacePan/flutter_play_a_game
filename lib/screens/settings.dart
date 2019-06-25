@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_minesweeper/configs.dart';
+import 'package:flutter_play_a_game/configs.dart';
 
 typedef void ConfigUpdater(GameConfigs configs);
 

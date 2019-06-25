@@ -38,7 +38,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.peacepan.flutter_minesweeper"
+        applicationId "com.peacepan.flutter_play_a_game"
         minSdkVersion 16
         targetSdkVersion 28
         versionCode flutterVersionCode.toInteger()
