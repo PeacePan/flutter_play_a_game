@@ -97,6 +97,7 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
     switch (_appLifecycleState) {
       case AppLifecycleState.resumed:
         _toggleFallTimer(true);
+        if (!_gameover) _themeMusic.play();
         print('!!!!! 恢復遊戲 !!!!!');
         break;
       case AppLifecycleState.inactive:
@@ -104,6 +105,8 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
       default:
         _toggleFallTimer(false);
         _toggleRestTimer(false);
+        _themeMusic.stop();
+        _gameoverMusic.stop();
         print('!!!!! 遊戲暫停 !!!!!');
         break;
     }

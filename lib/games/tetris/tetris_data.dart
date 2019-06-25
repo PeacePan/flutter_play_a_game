@@ -199,7 +199,7 @@ class TetrisData {
       /// 每多一行疊加 100 分
       int bonus = 0;
       lines.forEach((y) {
-        panel[y].fillRange(0, cols - 1, 0);
+        panel[y].fillRange(0, cols, 0);
         score += 100 + bonus;
         bonus += 100;
       });
