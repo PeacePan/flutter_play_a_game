@@ -1,26 +1,32 @@
 PODS:
-  - assets_audio_player (0.0.1):
+  - audioplayer (0.0.1):
     - Flutter
   - Flutter (1.0.0)
+  - path_provider (0.0.1):
+    - Flutter
   - shared_preferences (0.0.1):
     - Flutter
 
 DEPENDENCIES:
-  - assets_audio_player (from `.symlinks/plugins/assets_audio_player/ios`)
+  - audioplayer (from `.symlinks/plugins/audioplayer/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
+  - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
 
 EXTERNAL SOURCES:
-  assets_audio_player:
-    :path: ".symlinks/plugins/assets_audio_player/ios"
+  audioplayer:
+    :path: ".symlinks/plugins/audioplayer/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
+  path_provider:
+    :path: ".symlinks/plugins/path_provider/ios"
   shared_preferences:
     :path: ".symlinks/plugins/shared_preferences/ios"
 
 SPEC CHECKSUMS:
-  assets_audio_player: 828c5761d1e51c569f40e622db3a2cbfd61ecb7d
+  audioplayer: f4462b84216b9c55f02bbbdc7ab60eec7427b2d4
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
+  path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
   shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523
 
 PODFILE CHECKSUM: ebd43b443038e611b86ede96e613bd6033c49497

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import './game_pad.dart';
+import './sound.dart';
 import './tetris_data.dart';
 import './tetris_renderder.dart';
 
@@ -60,7 +61,11 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
   int _score;
   /// App 目前的狀態
   AppLifecycleState _appLifecycleState;
-  /// 遊戲進行中
+  /// 魔術方塊的主題音樂
+  Sound _themeMusic;
+  /// 遊戲結束的音樂
+  Sound _gameoverMusic;
+  /// 遊戲是否暫停中
   bool get _isPause => _fallTimer == null && _restTimer == null;
   TetrisState() {
     this.data = TetrisData(rows: ROWS, cols: COLS);
@@ -72,6 +77,14 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
     _freezeMove = _gameover = false;
     data.reset();
     putInShape();
+    _themeMusic?.stop();
+    Sound.playFromAsset(
+      'assets/tetris/', 'theme.mp3',
+      loop: true,
+    ).then((Sound sound) {
+      if (!mounted) return;
+      _themeMusic = sound;
+    });
   }
   void putInShape() {
     data.putInShape();
@@ -106,6 +119,8 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _fallTimer?.cancel();
     _restTimer?.cancel();
+    _themeMusic?.stop();
+    _gameoverMusic?.stop();
     super.dispose();
   }
   void _toggleFallTimer(bool shouldEnable) {
@@ -143,6 +158,13 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
       _gameover = true;
       _toggleFallTimer(false);
       _toggleRestTimer(false);
+      Sound.playFromAsset(
+        'assets/tetris/', 'gameover.mp3',
+        onComplete: () { _gameoverMusic = null; }
+      ).then((Sound sound) {
+        if (!mounted) return;
+        _gameoverMusic = sound;
+      });
     } else {
       data.putInShape();
       _toggleFallTimer(true);
@@ -281,10 +303,10 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
               ),
             ],
           ),
-          onTap: _execRotate,
+          onTap: Feedback.wrapForTap(_execRotate, context),
           onLeft: _execMoveLeft,
           onRight: _execMoveRight,
-          onSwipeDown: _execFallingDown,
+          onSwipeDown: Feedback.wrapForTap(_execFallingDown, context),
         ),
       ),
     );

@@ -18,8 +18,9 @@ environment:
 
 dependencies:
   cupertino_icons: ^0.1.2
-  assets_audio_player: ^1.0.1
+  audioplayer: ^0.5.2
   shared_preferences: ^0.5.3+1
+  path_provider: ^1.1.0
   flutter:
     sdk: flutter
 
@@ -33,12 +34,13 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
-  assets:
-    - assets/tetris/
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/tetris/gameover.mp3
+    - assets/tetris/theme.mp3
 
   # To add assets to your application, add an assets section, like this:
   # assets:
