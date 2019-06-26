@@ -54,7 +54,7 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
   /// 禁止移動
   bool _freezeMove;
   /// 禁止移動
-  bool _gameover;
+  bool _gameOver;
   /// 目前等級
   int _level;
   /// 遊戲總得分數
@@ -64,7 +64,7 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
   /// 魔術方塊的主題音樂
   Sound _themeMusic;
   /// 遊戲結束的音樂
-  Sound _gameoverMusic;
+  Sound _gameOverMusic;
   /// 遊戲是否暫停中
   bool get _isPause => _fallTimer == null && _restTimer == null;
   TetrisState() {
@@ -74,7 +74,7 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
   }
   void init() {
     _score = _level = 0;
-    _freezeMove = _gameover = false;
+    _freezeMove = _gameOver = false;
     data.reset();
     putInShape();
     _themeMusic?.stop();
@@ -97,7 +97,7 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
     switch (_appLifecycleState) {
       case AppLifecycleState.resumed:
         _toggleFallTimer(true);
-        if (!_gameover) _themeMusic.play();
+        if (!_gameOver) _themeMusic.play();
         print('!!!!! 恢復遊戲 !!!!!');
         break;
       case AppLifecycleState.inactive:
@@ -106,7 +106,7 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
         _toggleFallTimer(false);
         _toggleRestTimer(false);
         _themeMusic.stop();
-        _gameoverMusic.stop();
+        _gameOverMusic.stop();
         print('!!!!! 遊戲暫停 !!!!!');
         break;
     }
@@ -123,7 +123,7 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
     _fallTimer?.cancel();
     _restTimer?.cancel();
     _themeMusic?.stop();
-    _gameoverMusic?.stop();
+    _gameOverMusic?.stop();
     super.dispose();
   }
   void _toggleFallTimer(bool shouldEnable) {
@@ -158,15 +158,15 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
     }
     if (data.isGameOver) {
       print('!!!!! 遊戲結束 !!!!!');
-      _gameover = true;
+      _gameOver = true;
       _toggleFallTimer(false);
       _toggleRestTimer(false);
       Sound.playFromAsset(
         'assets/tetris/', 'gameover.mp3',
-        onComplete: () { _gameoverMusic = null; }
+        onComplete: () { _gameOverMusic = null; }
       ).then((Sound sound) {
         if (!mounted) return;
-        _gameoverMusic = sound;
+        _gameOverMusic = sound;
       });
     } else {
       data.putInShape();
@@ -185,8 +185,8 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
   }
   /// 執行方塊落下一格的處理
   void _execMoveDown(Timer _timer) {
+    if (_gameOver || _isPause) return;
     if (!data.canMoveDown) {
-      _freezeMove = true;
       print('到底了, bottom: ${data.currentBottom}');
       _toggleFallTimer(false);
       _toggleRestTimer(true);
@@ -197,16 +197,17 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
   }
   /// 執行往左移動
   void _execMoveLeft() {
-    if (_freezeMove) return;
+    if (_freezeMove || _gameOver || _isPause) return;
     if (data.moveCurrentShapeLeft()) setState(() {});
   }
   /// 執行往右移動
   void _execMoveRight() {
-    if (_freezeMove) return;
+    if (_freezeMove || _gameOver || _isPause) return;
     if (data.moveCurrentShapeRight()) setState(() {});
   }
   /// 執行方塊旋轉
   void _execRotate() {
+    if (_gameOver || _isPause) return;
     if (data.rotateCurrentShape()) setState(() {});
   }
   /// 暫停/復原遊戲
@@ -281,7 +282,7 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
                     Container(
                       margin: EdgeInsets.only(top: 16, bottom: 16),
                       child: IgnorePointer(
-                        ignoring: _gameover,
+                        ignoring: _gameOver,
                         child: IconButton(
                           icon: Icon(
                             _isPause ? Icons.play_arrow : Icons.pause
