@@ -183,32 +183,29 @@ class TetrisData {
   }
   /// 檢查是否有填滿，回傳得到的分數
   int cleanLines() {
-    List<int> lines = [];
-    for (int y = rows - 1; y >= 0; y--) {
-      bool isFull = true;
+    int score = 0;
+    int bonus = 0;
+    int y = rows - 1;
+    while (y >= 0) {
+      bool shouldClean = true;
       for (int x = 0; x < cols; x++) {
         if (panel[y][x] == 0) {
-          isFull = false;
+          shouldClean = false;
           break;
         }
       }
-      if (isFull) lines.add(y);
-    }
-    int score = 0;
-    if (lines.length > 0) {
-      /// 每多一行疊加 100 分
-      int bonus = 0;
-      lines.forEach((y) {
-        panel[y].fillRange(0, cols, 0);
+      if (shouldClean) {
         score += 100 + bonus;
+        // 每多一行疊加 100 分
         bonus += 100;
-      });
-      int lineTop = lines.last - 1;
-      for (int y = lineTop; y >= 0; y--) {
-        for (int x = 0; x < cols; x++) {
-          panel[y + lines.length][x] = panel[y][x];
-          panel[y][x] = 0;
+        // 將目標清空格的上方空格都往下移
+        for (int dy = y; dy >= 0; dy--) {
+          for (int x = 0; x < cols; x++) {
+            panel[dy][x] = dy - 1 >= 0 ? panel[dy - 1][x] : 0;
+          }
         }
+      } else {
+        y--;
       }
     }
     return score;
