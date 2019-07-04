@@ -78,13 +78,13 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
     data.reset();
     putInShape();
     _themeMusic?.stop();
-    Sound.playFromAsset(
-      'assets/tetris/', 'theme.mp3',
-      loop: true,
-    ).then((Sound sound) {
-      if (!mounted) return;
-      _themeMusic = sound;
-    });
+    // Sound.playFromAsset(
+    //   'assets/tetris/', 'theme.mp3',
+    //   loop: true,
+    // ).then((Sound sound) {
+    //   if (!mounted) return;
+    //   _themeMusic = sound;
+    // });
   }
   void putInShape() {
     data.putInShape();
@@ -161,13 +161,13 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
       _gameOver = true;
       _toggleFallTimer(false);
       _toggleRestTimer(false);
-      Sound.playFromAsset(
-        'assets/tetris/', 'gameover.mp3',
-        onComplete: () { _gameOverMusic = null; }
-      ).then((Sound sound) {
-        if (!mounted) return;
-        _gameOverMusic = sound;
-      });
+      // Sound.playFromAsset(
+      //   'assets/tetris/', 'gameover.mp3',
+      //   onComplete: () { _gameOverMusic = null; }
+      // ).then((Sound sound) {
+      //   if (!mounted) return;
+      //   _gameOverMusic = sound;
+      // });
     } else {
       data.putInShape();
       _toggleFallTimer(true);
@@ -308,6 +308,7 @@ class TetrisState extends State<Tetris> with WidgetsBindingObserver {
             ],
           ),
           onTap: Feedback.wrapForTap(_execRotate, context),
+          onUp: _execRotate,
           onLeft: _execMoveLeft,
           onRight: _execMoveRight,
           onSwipeDown: Feedback.wrapForTap(_execFallingDown, context),

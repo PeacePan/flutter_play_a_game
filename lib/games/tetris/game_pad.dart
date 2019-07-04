@@ -61,7 +61,9 @@ class _GamePadState extends State<GamePad> {
       widget.onLeft();
     } else if (key == PhysicalKeyboardKey.arrowRight) {
       widget.onRight();
-    } else if (key == PhysicalKeyboardKey.space) {
+    } else if (key == PhysicalKeyboardKey.arrowUp) {
+      widget.onUp();
+    } else if (key == PhysicalKeyboardKey.arrowDown) {
       widget.onSwipeDown();
     }
   }
