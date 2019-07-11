@@ -7,7 +7,6 @@ const ICON_TITLES = [
   '踩地雷',
   '井字遊戲',
   '俄羅斯方塊',
-  '2048',
 ];
 
 class Layout extends StatefulWidget {
@@ -106,10 +105,6 @@ class LayoutState extends State<Layout> {
             icon: Icon(Icons.gamepad),
             title: Text(ICON_TITLES[2]),
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.filter_2),
-          //   title: Text(ICON_TITLES[3]),
-          // ),
         ],
       ),
     );

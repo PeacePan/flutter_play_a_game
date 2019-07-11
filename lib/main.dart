@@ -1,22 +1,9 @@
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show debugDefaultTargetPlatformOverride;
 import 'package:flutter/material.dart';
 import 'package:flutter_play_a_game/configs.dart';
 import 'package:flutter_play_a_game/screens/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  TargetPlatform targetPlatform;
-  if (Platform.isMacOS) {
-    targetPlatform = TargetPlatform.iOS;
-  } else if (Platform.isLinux || Platform.isWindows) {
-    targetPlatform = TargetPlatform.android;
-  }
-  if (targetPlatform != null) {
-    debugDefaultTargetPlatformOverride = targetPlatform;
-  }
-  runApp(App());
-}
+void main() => runApp(App());
 
 class App extends StatefulWidget {
 	App({ Key key }) : super(key: key);
