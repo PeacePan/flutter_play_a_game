@@ -8,13 +8,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.0"
-  audioplayer:
-    dependency: "direct main"
-    description:
-      name: audioplayer
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.5.2"
   boolean_selector:
     dependency: transitive
     description:
@@ -74,13 +67,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.6.2"
-  path_provider:
-    dependency: "direct main"
-    description:
-      name: path_provider
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.2"
   pedantic:
     dependency: transitive
     description:
@@ -101,7 +87,7 @@ packages:
       name: shared_preferences
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.3+2"
+    version: "0.5.3+1"
   sky_engine:
     dependency: transitive
     description: flutter
