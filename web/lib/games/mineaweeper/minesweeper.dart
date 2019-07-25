@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:flutter/material.dart';
+import 'package:flutter_web/material.dart';
 import '../../configs.dart';
 import '../../main.dart';
 import '../../utlis.dart';
@@ -22,7 +22,7 @@ const BOMB_COLORS = [
   Colors.black,
 ];
 /// 1 秒鐘的定義
-const ONE_SEC = const Duration(seconds: 1);
+const ONE_SEC = Duration(seconds: 1);
 /// 隨機產生器種子
 final randomGenerator = Random(DateTime.now().microsecondsSinceEpoch);
 

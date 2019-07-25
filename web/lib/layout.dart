@@ -1,12 +1,11 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
+import 'package:flutter_web/material.dart';
 import 'main.dart';
 import 'screens/settings.dart';
 
 const ICON_TITLES = [
+  '俄羅斯方塊',
   '踩地雷',
   '井字遊戲',
-  '俄羅斯方塊',
 ];
 
 class Layout extends StatefulWidget {
@@ -78,14 +77,19 @@ class LayoutState extends State<Layout> {
                 color: Colors.blue,
               ),
             ),
-            ListTile(
-              title: Text('關閉應用程式'),
-              onTap: closeApp,
-            ),
           ],
         ),
       ),
-      body: widget.children[currentBottomNavIndex],
+      body: Center(
+        child: Container(
+          alignment: Alignment.topCenter,
+          constraints: BoxConstraints(
+            maxWidth: 375,
+            maxHeight: 667,
+          ),
+          child: widget.children[currentBottomNavIndex],
+        ),
+      ),
       bottomNavigationBar: hideBottomNav
         ? null
         : BottomNavigationBar(
@@ -94,23 +98,20 @@ class LayoutState extends State<Layout> {
         onTap: updateBottomNavIndex,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.brightness_high),
+            icon: Icon(Icons.gamepad),
             title: Text(ICON_TITLES[0]),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.grid_on),
+            icon: Icon(Icons.brightness_high),
             title: Text(ICON_TITLES[1]),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.gamepad),
+            icon: Icon(Icons.grid_on),
             title: Text(ICON_TITLES[2]),
           ),
         ],
       ),
     );
-  }
-  void closeApp() {
-    exit(0);
   }
   void onPressSettings() {
     Navigator.push(context, MaterialPageRoute<Null>(

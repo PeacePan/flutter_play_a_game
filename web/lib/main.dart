@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_web/material.dart';
 import 'configs.dart';
 import 'screens/home.dart';
 
@@ -19,8 +18,6 @@ class AppState extends State<App> {
   GameConfigs configs = GameConfigs(mineweeperLevel: Level.easy);
   Future<void> updateConfig(GameConfigs newConfigs) async {
     setState(() { configs = newConfigs; });
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setInt('mineweeperLevel', newConfigs.mineweeperLevel.index);
   }
   @override
   void initState() {

@@ -1,7 +1,6 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_web/cupertino.dart';
+import 'package:flutter_web/material.dart';
+import 'package:flutter_web/widgets.dart';
 import '../games/mineaweeper/minesweeper.dart';
 // import '../games/number_2048/number_2048.dart';
 import '../games/tetris/tetris.dart';
@@ -21,11 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _inited = false;
   void _initData() async {
     try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      int levelIndex = prefs.getInt('mineweeperLevel');
-      Level mineweeperLevel = levelIndex != null
-        ? Level.values[levelIndex]
-        : Level.easy;
+      Level mineweeperLevel = Level.easy;
       AppState appState = App.of(context);
       appState.configs.mineweeperLevel = mineweeperLevel;
       await appState.updateConfig(appState.configs);
@@ -48,9 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
         currentBottomNavIndex: 0,
       ),
       children: [
+        Tetris(),
         Minesweeper(),
         TicTacToe(),
-        Tetris(),
         // Number2048(),
       ],
     );
